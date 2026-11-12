@@ -9,8 +9,8 @@ import 'dart:io';
 import '../transport/peer_connection.dart' show RemoteIceServer;
 import '../util/bytes.dart';
 
-/// Default hosted Server (李国宝's deployment).
-final Uri defaultRemoteServer = Uri.parse('https://dsh.r2049.cn');
+/// Default hosted Server (Xcoder's deployment).
+final Uri defaultRemoteServer = Uri.parse('https://agent.xcodex.vip');
 
 /// Normalizes a user-entered Server address to an origin without a trailing
 /// slash. HTTPS is required except for loopback / private-network hosts

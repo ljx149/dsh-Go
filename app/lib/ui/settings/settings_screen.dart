@@ -31,7 +31,6 @@ import '../engine/engine_status.dart';
 import '../engine_settings/engine_settings_hub.dart';
 import '../engine_settings/web_search_page.dart';
 import 'media_settings_page.dart';
-import '../features/feature_catalog.dart' show communityPage;
 import '../features/feature_format.dart' show permissionName;
 import '../features/permission_page.dart';
 import '../onboarding/api_key_page.dart' show maskApiKey;
@@ -300,12 +299,6 @@ class SettingsScreen extends ConsumerWidget {
                 value: Text(l10n.askAiTooltip),
                 onTap: () => unawaited(askAi(context, AskAiTopic.overview)),
               ),
-            SettingsTile(
-              icon: AppIcons.community,
-              tint: SettingsHues.help,
-              spot: Spots.community,
-              onTap: () => _push(context, communityPage()),
-            ),
             SettingsTile(
               icon: AppIcons.diagnostics,
               tint: SettingsHues.help,

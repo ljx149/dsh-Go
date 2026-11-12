@@ -8,12 +8,10 @@ import '../../plugins/native/native_state.dart';
 import '../../state/hosts_state.dart';
 import '../../state/plugins_state.dart';
 import '../common/ask_ai.dart';
-import '../common/segmented_pill.dart';
 import '../features/feature_kit.dart';
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import 'installed_tab.dart';
-import 'market_tab.dart';
 
 enum PluginsTab { installed, market }
 
@@ -33,7 +31,6 @@ class PluginsScreen extends ConsumerStatefulWidget {
 }
 
 class _PluginsScreenState extends ConsumerState<PluginsScreen> {
-  late PluginsTab _tab = widget.initialTab;
   bool _refreshing = false;
 
   @override
@@ -57,16 +54,10 @@ class _PluginsScreenState extends ConsumerState<PluginsScreen> {
     try {
       // Installed entries use this catalogue for update and withdrawal notices.
       ref.invalidate(officialMarketProvider);
-      if (_tab == PluginsTab.installed) {
-        rereadNativeContributions(ref);
-        await ref.read(installedPluginsProvider.notifier).refresh();
-      } else {
-        ref.invalidate(marketCatalogProvider);
-        // The official sections show their own failure; a pull reports dshfind's.
-        await ref.read(marketCatalogProvider.future);
-      }
+      rereadNativeContributions(ref);
+      await ref.read(installedPluginsProvider.notifier).refresh();
     } on Object catch (error) {
-      final text = error is MarketFetchException ? error.message : describePluginError(error).message;
+      final text = describePluginError(error).message;
       messenger?.showSnackBar(SnackBar(content: Text(appL10n.pluginsRefreshFailure(text))));
     } finally {
       if (mounted) setState(() => _refreshing = false);
@@ -104,25 +95,10 @@ class _PluginsScreenState extends ConsumerState<PluginsScreen> {
         ),
       ],
       slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: SegmentedPill<PluginsTab>(
-              segments: [
-                PillSegment(PluginsTab.installed, l10n.commonInstalled),
-                PillSegment(PluginsTab.market, l10n.pluginsMarketTitle),
-              ],
-              selected: _tab,
-              onChanged: (t) => setState(() => _tab = t),
-            ),
-          ),
-        ),
-        switch (_tab) {
-          PluginsTab.installed when host == null && ref.watch(pluginListViewProvider).value == null =>
-            const SliverToBoxAdapter(child: _NotConnected()),
-          PluginsTab.installed => InstalledPluginsSliver(onBrowse: () => setState(() => _tab = PluginsTab.market)),
-          PluginsTab.market => const MarketSliver(),
-        },
+        if (host == null && ref.watch(pluginListViewProvider).value == null)
+          const SliverToBoxAdapter(child: _NotConnected())
+        else
+          const InstalledPluginsSliver(onBrowse: _noBrowse),
       ],
     );
   }
@@ -133,6 +109,9 @@ class _PluginsScreenState extends ConsumerState<PluginsScreen> {
     if (!host.canInstall) return appL10n.pluginsRelayToggleOnly(host.label);
     return host.kind == HostKind.local ? appL10n.pluginsInstallThisPhone : appL10n.pluginsInstallHost(host.label);
   }
+
+  /// The installed list's "browse" affordance: a no-op while the market is hidden.
+  static void _noBrowse() {}
 }
 
 class _NotConnected extends StatelessWidget {
