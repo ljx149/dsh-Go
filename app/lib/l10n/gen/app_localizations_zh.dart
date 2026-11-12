@@ -8494,7 +8494,7 @@ class L10nZh extends L10n {
   String get harmonyPageUnavailable => '这个版本没有这个页面';
 
   @override
-  String get harmonyNotificationSettingsFailed => '没能打开系统设置。到「设置 → 通知和状态栏 → DSH Go」里开启';
+  String get harmonyNotificationSettingsFailed => '没能打开系统设置。到「设置 → 通知和状态栏 → AgentPort」里开启';
 
   @override
   String get harmonySearchUnavailable => '这个版本没有这项功能';
@@ -8627,7 +8627,7 @@ class L10nZh extends L10n {
   String get harmonyLiveBlockedTitle => '系统没有允许进度通知';
 
   @override
-  String get harmonyLiveBlockedText => '在系统设置里为 DSH Go 打开通知';
+  String get harmonyLiveBlockedText => '在系统设置里为 AgentPort 打开通知';
 
   @override
   String get harmonyAlertsOffTitle => '提醒通知已关闭';
@@ -9327,7 +9327,7 @@ class L10nZh extends L10n {
   String get iosSaveToFiles => '存到「文件」';
 
   @override
-  String get iosFilesFolderHint => '文件 App 的 DSH Go 文件夹';
+  String get iosFilesFolderHint => '文件 App 的 AgentPort 文件夹';
 
   @override
   String get iosSavingToFiles => '正在存到「文件」…';
@@ -9339,7 +9339,7 @@ class L10nZh extends L10n {
   String get iosEnableBanners => '横幅不弹时，到系统设置打开「横幅」';
 
   @override
-  String get iosNotificationSettingsFailed => '没能打开系统设置。到「设置 → DSH Go → 通知」里开启';
+  String get iosNotificationSettingsFailed => '没能打开系统设置。到「设置 → AgentPort → 通知」里开启';
 
   @override
   String get iosVoiceSystemHint => '使用系统的语音识别';
@@ -20151,7 +20151,7 @@ class L10nZh extends L10n {
   String get systemActionsWaitingEngine => '已开启，等本机引擎启动';
 
   @override
-  String get systemActionsOffScreen => '已开启，回到 DSH Go 才能用';
+  String get systemActionsOffScreen => '已开启，回到 AgentPort 才能用';
 
   @override
   String get systemActionsConnecting => '正在连接';
@@ -20172,10 +20172,10 @@ class L10nZh extends L10n {
   String get systemActionsRemoteHint => '系统操作只在本机引擎的对话里有效';
 
   @override
-  String get systemActionsOnScreenTitle => '只在 DSH Go 在屏幕上时有效';
+  String get systemActionsOnScreenTitle => '只在 AgentPort 在屏幕上时有效';
 
   @override
-  String get systemActionsOnScreenBody => '系统不让后台应用做这些。AI 打开别的应用后，要等你回到 DSH Go 才能接着做。';
+  String get systemActionsOnScreenBody => '系统不让后台应用做这些。AI 打开别的应用后，要等你回到 AgentPort 才能接着做。';
 
   @override
   String get systemActionsCanTitle => '能做的';
@@ -20277,7 +20277,7 @@ class L10nZh extends L10n {
   String get systemActionsDisclosureWhenTitle => '什么时候做';
 
   @override
-  String get systemActionsDisclosureWhenBody => '只在对话用到、DSH Go 在屏幕上时。默认每次先问你，选了完全权限的对话不问。';
+  String get systemActionsDisclosureWhenBody => '只在对话用到、AgentPort 在屏幕上时。默认每次先问你，选了完全权限的对话不问。';
 
   @override
   String get systemActionsDisclosureWhoTitle => '发给谁';
@@ -20301,7 +20301,7 @@ class L10nZh extends L10n {
   String get systemActionsHandoffTitle => '轮到你来操作';
 
   @override
-  String get systemActionsHandoffNote => '做完回到 DSH Go 点继续。继续只表示你确认了，AI 看不到其他应用里发生了什么。';
+  String get systemActionsHandoffNote => '做完回到 AgentPort 点继续。继续只表示你确认了，AI 看不到其他应用里发生了什么。';
 
   @override
   String get systemActionsHandoffFailed => '这次没算上，提示如果还在可以再点一次';
@@ -20328,7 +20328,7 @@ class L10nZh extends L10n {
   String get systemActionsResultUnsupported => '鸿蒙版不支持这个动作，没有执行。';
 
   @override
-  String get systemActionsResultOffScreen => 'DSH Go 不在屏幕上，没有执行。';
+  String get systemActionsResultOffScreen => 'AgentPort 不在屏幕上，没有执行。';
 
   @override
   String get systemActionsResultUnavailable => '系统操作没开或暂时连不上，没有执行。到「设置 → 系统操作」看看。';
@@ -21432,7 +21432,7 @@ class L10nZh extends L10n {
   }
 
   @override
-  String get tavernStorybookMadeWith => '用 DSH Go 酒馆写成';
+  String get tavernStorybookMadeWith => '用 AgentPort 酒馆写成';
 
   @override
   String get tavernStorybookContents => '目录';
@@ -26348,7 +26348,7 @@ class L10nZh extends L10n {
 
   @override
   String workshopMinApp(String version) {
-    return '需要 DSH Go $version 或更新的版本。';
+    return '需要 AgentPort $version 或更新的版本。';
   }
 
   @override

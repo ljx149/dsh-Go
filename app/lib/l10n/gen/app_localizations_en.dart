@@ -8957,7 +8957,7 @@ class L10nEn extends L10n {
 
   @override
   String get harmonyNotificationSettingsFailed =>
-      'Couldn’t open system settings. Turn on notifications in Settings → Notifications & status bar → DSH Go.';
+      'Couldn’t open system settings. Turn on notifications in Settings → Notifications & status bar → AgentPort.';
 
   @override
   String get harmonySearchUnavailable => 'This isn\'t available in this version';
@@ -9102,7 +9102,7 @@ class L10nEn extends L10n {
   String get harmonyLiveBlockedTitle => 'The system isn\'t allowing progress notifications';
 
   @override
-  String get harmonyLiveBlockedText => 'Turn on notifications for DSH Go in system settings';
+  String get harmonyLiveBlockedText => 'Turn on notifications for AgentPort in system settings';
 
   @override
   String get harmonyAlertsOffTitle => 'Alert notifications are off';
@@ -9849,7 +9849,7 @@ class L10nEn extends L10n {
   String get iosSaveToFiles => 'Save to Files';
 
   @override
-  String get iosFilesFolderHint => 'DSH Go folder in the Files app';
+  String get iosFilesFolderHint => 'AgentPort folder in the Files app';
 
   @override
   String get iosSavingToFiles => 'Saving to Files…';
@@ -9862,7 +9862,7 @@ class L10nEn extends L10n {
 
   @override
   String get iosNotificationSettingsFailed =>
-      'Couldn’t open system settings. Turn on notifications in Settings → DSH Go → Notifications.';
+      'Couldn’t open system settings. Turn on notifications in Settings → AgentPort → Notifications.';
 
   @override
   String get iosVoiceSystemHint => 'Use the system’s speech recognition';
@@ -21267,7 +21267,7 @@ class L10nEn extends L10n {
   String get systemActionsWaitingEngine => 'On, waiting for the local engine';
 
   @override
-  String get systemActionsOffScreen => 'On, works once you\'re back in DSH Go';
+  String get systemActionsOffScreen => 'On, works once you\'re back in AgentPort';
 
   @override
   String get systemActionsConnecting => 'Connecting';
@@ -21288,11 +21288,11 @@ class L10nEn extends L10n {
   String get systemActionsRemoteHint => 'System actions only work in the local engine\'s chats';
 
   @override
-  String get systemActionsOnScreenTitle => 'Only works with DSH Go on screen';
+  String get systemActionsOnScreenTitle => 'Only works with AgentPort on screen';
 
   @override
   String get systemActionsOnScreenBody =>
-      'The system doesn\'t let background apps do these. After the AI opens another app, it can\'t go on until you\'re back in DSH Go.';
+      'The system doesn\'t let background apps do these. After the AI opens another app, it can\'t go on until you\'re back in AgentPort.';
 
   @override
   String get systemActionsCanTitle => 'What it can do';
@@ -21399,7 +21399,7 @@ class L10nEn extends L10n {
 
   @override
   String get systemActionsDisclosureWhenBody =>
-      'Only when a chat calls for it and DSH Go is on screen. It asks each time by default, and not in chats with full access.';
+      'Only when a chat calls for it and AgentPort is on screen. It asks each time by default, and not in chats with full access.';
 
   @override
   String get systemActionsDisclosureWhoTitle => 'Who gets what';
@@ -21425,7 +21425,7 @@ class L10nEn extends L10n {
 
   @override
   String get systemActionsHandoffNote =>
-      'When you\'re done, come back to DSH Go and press Continue. That only says you confirmed; the AI can\'t see what happened in other apps.';
+      'When you\'re done, come back to AgentPort and press Continue. That only says you confirmed; the AI can\'t see what happened in other apps.';
 
   @override
   String get systemActionsHandoffFailed => 'That didn\'t count. If the prompt is still here, press it again';
@@ -21455,7 +21455,7 @@ class L10nEn extends L10n {
   String get systemActionsResultUnsupported => 'HarmonyOS doesn\'t support this action. Nothing ran.';
 
   @override
-  String get systemActionsResultOffScreen => 'DSH Go wasn\'t on screen. Nothing ran.';
+  String get systemActionsResultOffScreen => 'AgentPort wasn\'t on screen. Nothing ran.';
 
   @override
   String get systemActionsResultUnavailable =>
@@ -22622,7 +22622,7 @@ class L10nEn extends L10n {
   }
 
   @override
-  String get tavernStorybookMadeWith => 'Written in the DSH Go tavern';
+  String get tavernStorybookMadeWith => 'Written in the AgentPort tavern';
 
   @override
   String get tavernStorybookContents => 'Contents';
@@ -27763,7 +27763,7 @@ class L10nEn extends L10n {
 
   @override
   String workshopMinApp(String version) {
-    return 'Needs DSH Go $version or later.';
+    return 'Needs AgentPort $version or later.';
   }
 
   @override

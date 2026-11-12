@@ -15689,7 +15689,7 @@ abstract class L10n {
   /// No description provided for @harmonyNotificationSettingsFailed.
   ///
   /// In zh, this message translates to:
-  /// **'没能打开系统设置。到「设置 → 通知和状态栏 → DSH Go」里开启'**
+  /// **'没能打开系统设置。到「设置 → 通知和状态栏 → AgentPort」里开启'**
   String get harmonyNotificationSettingsFailed;
 
   /// No description provided for @harmonySearchUnavailable.
@@ -15953,7 +15953,7 @@ abstract class L10n {
   /// No description provided for @harmonyLiveBlockedText.
   ///
   /// In zh, this message translates to:
-  /// **'在系统设置里为 DSH Go 打开通知'**
+  /// **'在系统设置里为 AgentPort 打开通知'**
   String get harmonyLiveBlockedText;
 
   /// No description provided for @harmonyAlertsOffTitle.
@@ -17261,7 +17261,7 @@ abstract class L10n {
   /// No description provided for @iosFilesFolderHint.
   ///
   /// In zh, this message translates to:
-  /// **'文件 App 的 DSH Go 文件夹'**
+  /// **'文件 App 的 AgentPort 文件夹'**
   String get iosFilesFolderHint;
 
   /// No description provided for @iosSavingToFiles.
@@ -17285,7 +17285,7 @@ abstract class L10n {
   /// No description provided for @iosNotificationSettingsFailed.
   ///
   /// In zh, this message translates to:
-  /// **'没能打开系统设置。到「设置 → DSH Go → 通知」里开启'**
+  /// **'没能打开系统设置。到「设置 → AgentPort → 通知」里开启'**
   String get iosNotificationSettingsFailed;
 
   /// No description provided for @iosVoiceSystemHint.
@@ -37019,7 +37019,7 @@ abstract class L10n {
   /// No description provided for @systemActionsOffScreen.
   ///
   /// In zh, this message translates to:
-  /// **'已开启，回到 DSH Go 才能用'**
+  /// **'已开启，回到 AgentPort 才能用'**
   String get systemActionsOffScreen;
 
   /// No description provided for @systemActionsConnecting.
@@ -37061,13 +37061,13 @@ abstract class L10n {
   /// No description provided for @systemActionsOnScreenTitle.
   ///
   /// In zh, this message translates to:
-  /// **'只在 DSH Go 在屏幕上时有效'**
+  /// **'只在 AgentPort 在屏幕上时有效'**
   String get systemActionsOnScreenTitle;
 
   /// No description provided for @systemActionsOnScreenBody.
   ///
   /// In zh, this message translates to:
-  /// **'系统不让后台应用做这些。AI 打开别的应用后，要等你回到 DSH Go 才能接着做。'**
+  /// **'系统不让后台应用做这些。AI 打开别的应用后，要等你回到 AgentPort 才能接着做。'**
   String get systemActionsOnScreenBody;
 
   /// No description provided for @systemActionsCanTitle.
@@ -37271,7 +37271,7 @@ abstract class L10n {
   /// No description provided for @systemActionsDisclosureWhenBody.
   ///
   /// In zh, this message translates to:
-  /// **'只在对话用到、DSH Go 在屏幕上时。默认每次先问你，选了完全权限的对话不问。'**
+  /// **'只在对话用到、AgentPort 在屏幕上时。默认每次先问你，选了完全权限的对话不问。'**
   String get systemActionsDisclosureWhenBody;
 
   /// No description provided for @systemActionsDisclosureWhoTitle.
@@ -37319,7 +37319,7 @@ abstract class L10n {
   /// No description provided for @systemActionsHandoffNote.
   ///
   /// In zh, this message translates to:
-  /// **'做完回到 DSH Go 点继续。继续只表示你确认了，AI 看不到其他应用里发生了什么。'**
+  /// **'做完回到 AgentPort 点继续。继续只表示你确认了，AI 看不到其他应用里发生了什么。'**
   String get systemActionsHandoffNote;
 
   /// No description provided for @systemActionsHandoffFailed.
@@ -37373,7 +37373,7 @@ abstract class L10n {
   /// No description provided for @systemActionsResultOffScreen.
   ///
   /// In zh, this message translates to:
-  /// **'DSH Go 不在屏幕上，没有执行。'**
+  /// **'AgentPort 不在屏幕上，没有执行。'**
   String get systemActionsResultOffScreen;
 
   /// No description provided for @systemActionsResultUnavailable.
@@ -39395,7 +39395,7 @@ abstract class L10n {
   /// No description provided for @tavernStorybookMadeWith.
   ///
   /// In zh, this message translates to:
-  /// **'用 DSH Go 酒馆写成'**
+  /// **'用 AgentPort 酒馆写成'**
   String get tavernStorybookMadeWith;
 
   /// No description provided for @tavernStorybookContents.
@@ -48089,7 +48089,7 @@ abstract class L10n {
   /// No description provided for @workshopMinApp.
   ///
   /// In zh, this message translates to:
-  /// **'需要 DSH Go {version} 或更新的版本。'**
+  /// **'需要 AgentPort {version} 或更新的版本。'**
   String workshopMinApp(String version);
 
   /// No description provided for @workshopInstalledVersion.
