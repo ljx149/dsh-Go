@@ -116,7 +116,7 @@ abstract class RelayBackend {
   /// False when the relay is turned off ([UnavailableRelayBackend]).
   bool get available;
 
-  /// Server shown in the UI (`dsh.r2049.cn`).
+  /// Server shown in the UI (`agent.xcodex.vip`).
   String get serverLabel;
 
   Future<RelayUser?> currentUser();
@@ -179,7 +179,7 @@ class UnavailableRelayBackend implements RelayBackend {
   bool get available => false;
 
   @override
-  String get serverLabel => 'dsh.r2049.cn';
+  String get serverLabel => 'agent.xcodex.vip';
 
   @override
   Future<RelayUser?> currentUser() async => null;
@@ -487,7 +487,7 @@ class RelayPairingOffer {
     required this.token,
   });
 
-  /// Origin of the Server the code belongs to (`https://dsh.r2049.cn`).
+  /// Origin of the Server the code belongs to (`https://agent.xcodex.vip`).
   final String server;
 
   /// Untrusted display name from the code / Server.

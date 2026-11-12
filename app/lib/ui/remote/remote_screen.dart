@@ -46,7 +46,7 @@ class RemoteScreen extends ConsumerWidget {
         builder: (_) => WebViewPage(
           url: Uri.parse(AppInfo.remoteConsole),
           title: l10n.remoteConsole,
-          subtitle: 'dsh.r2049.cn',
+          subtitle: 'agent.xcodex.vip',
           allowOpenExternal: true,
           // Android suspends the page in the background and its connection drops.
           reloadAfterBackground: const Duration(seconds: 60),
@@ -411,7 +411,7 @@ class _RelaySection extends ConsumerWidget {
         // The credit's link takes taps in the margin below it, so it carries it.
         margin: available ? RelayCredit.sectionMargin : kSettingsGroupMargin,
         footer: available
-            ? RelayCredit(server: server.isEmpty || server == 'dsh.r2049.cn' ? null : server)
+            ? RelayCredit(server: server.isEmpty || server == 'agent.xcodex.vip' ? null : server)
             : Text(l10n.remoteUnavailable),
         children: [_LoginCard(account: account, available: available, loading: async.isLoading && !async.hasValue)],
       );

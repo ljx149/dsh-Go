@@ -16,11 +16,11 @@ abstract final class AppInfo {
 
   /// The app's name as the phone shows it: launcher, Recents, notifications, system
   /// settings, the licence page. Matches `android:label` in AndroidManifest.xml.
-  static const name = 'DSH Go';
+  static const name = 'AgentPort';
 
   /// The in-app wordmark: the drawer's lockup, the welcome page and the brand mark's
   /// spoken label.
-  static const wordmark = 'DSH';
+  static const wordmark = 'AgentPort';
 
   /// Required wording: the app is built on DSH but is not an official DeepSeek product.
   /// Shown on the About and licence pages.
@@ -29,16 +29,16 @@ abstract final class AppInfo {
   /// The line under the brand mark (welcome page, 关于 dsh-go).
   static String get slogan => appL10n.appSlogan;
 
-  /// The original DSH Go author and their personal profiles, not project pages.
-  static const author = 'ccch1mneyyy';
-  static const authorBilibiliName = 'ccchimneyyy';
-  static const authorBilibiliUrl = 'https://b23.tv/9WBns6Y';
-  static const authorXHandle = '@cccch1mneyyyy';
-  static const authorXUrl = 'https://x.com/cccch1mneyyyy';
-  static const authorGithubUrl = 'https://github.com/ccch1mneyyy';
+  /// The app's author and their profiles. Point these at your own handles.
+  static const author = 'Xcoder';
+  static const authorBilibiliName = 'Xcoder';
+  static const authorBilibiliUrl = 'https://agent.xcodex.vip';
+  static const authorXHandle = '@Xcoder';
+  static const authorXUrl = 'https://x.com/Xcoder';
+  static const authorGithubUrl = 'https://github.com/Xcoder';
 
   static const deepseekPlatform = 'https://platform.deepseek.com/api_keys';
-  static const remoteConsole = 'https://dsh.r2049.cn/app';
+  static const remoteConsole = 'https://agent.xcodex.vip/app';
 
   /// DSH Remote's upstream, credited under the DSH Remote card as its GitHub
   /// handle and name.

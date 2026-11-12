@@ -380,7 +380,7 @@ final activeHostProvider = NotifierProvider<ActiveHostController, HostRef>(Activ
 
 // ── DSH Remote (relay) account ───────────────────────────────────────────────
 
-/// The DSH Remote server: null for the hosted dsh.r2049.cn, else a
+/// The DSH Remote server: null for the hosted agent.xcodex.vip, else a
 /// self-hosted origin with its own sign-in methods.
 class RelayServerController extends Notifier<String?> {
   static const prefsKey = 'remote_relay_server';
@@ -411,7 +411,7 @@ class RelayServerController extends Notifier<String?> {
     } catch (_) {}
   }
 
-  /// Back to dsh.r2049.cn (each server keeps its own sign-in).
+  /// Back to agent.xcodex.vip (each server keeps its own sign-in).
   Future<void> useDefault() => ref.read(_relayServerActionsProvider).useDefault();
 
   /// Switches to [server] after the person selects it or agrees to a pairing code;
@@ -473,7 +473,7 @@ class _RelayServerActions {
   }
 }
 
-const defaultRelayServer = 'https://dsh.r2049.cn';
+const defaultRelayServer = 'https://agent.xcodex.vip';
 
 final relayServerProvider = NotifierProvider<RelayServerController, String?>(RelayServerController.new);
 

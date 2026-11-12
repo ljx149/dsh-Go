@@ -16,7 +16,6 @@ import '../shell/page_frame.dart';
 import '../star/star_prompt_dialog.dart' show openStarProject;
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
-import '../update/update_tiles.dart';
 import 'settings_widgets.dart';
 
 /// The installed version as the app shows it: `0.9.6 (10271234)`.
@@ -44,7 +43,6 @@ class AboutPage extends ConsumerWidget {
               spot: Spots.version,
               value: Text(version, style: AppType.tabular(theme.textTheme.bodyMedium!)),
             ),
-            const AppUpdateTiles(),
             SettingsTile(
               key: const ValueKey('settings-star'),
               spot: Spots.star,
