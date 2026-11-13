@@ -133,17 +133,24 @@ class DshRemoteRelayBackend implements RelayBackend, RelayNetworkBackend, RelayP
     try {
       return _user(await account.loginWithPassword(email, password));
     } on remote.RemoteConnectException catch (e) {
-      final code = e.failure.code;
-      if (code.contains('AUTH') || code.contains('CREDENTIAL') || code == 'UNAUTHORIZED') {
-        throw HostLinkError(
-          HostLinkErrorKind.authFailed,
-          appL10n.remoteErrEmailPassword,
-          detail: '$code: ${e.failure.message}',
-        );
-      }
+      // Exact-code match, not `code.contains('AUTH')`: the upstream
+      // identity service reports several distinct failure classes and the
+      // UI must not lump them all under "wrong password". `describe` is
+      // the single mapping — it knows the retryable semantics and the
+      // diagnostic codes for each.
       throw describe(e.failure);
     }
   }
+
+  @override
+  Future<RelayLoginSession> startDeviceLogin() => _map(() async {
+    final login = await account.startDeviceLogin();
+    return RelayLoginSession(
+      loginUrl: login.loginUrl,
+      completed: _map(() async => _user(await login.result)),
+      onCancel: login.cancel,
+    );
+  });
 
   @override
   Future<void> logout() => _map(() => account.logout());
@@ -403,8 +410,12 @@ class DshRemoteRelayBackend implements RelayBackend, RelayNetworkBackend, RelayP
 
   // ---------------------------------------------------------------------------
 
-  static RelayUser _user(remote.RemoteUser user) =>
-      RelayUser(id: user.deviceId, displayName: user.account, provider: user.provider);
+  static RelayUser _user(remote.RemoteUser user) => RelayUser(
+    id: user.deviceId,
+    displayName: user.account,
+    provider: user.provider,
+    userId: user.userId,
+  );
 
   static RelayHost _host(remote.RemoteHost h) => RelayHost(
     id: h.id,
@@ -505,7 +516,34 @@ class DshRemoteRelayBackend implements RelayBackend, RelayNetworkBackend, RelayP
       'LOGIN_EXPIRED' => e(HostLinkErrorKind.other, appL10n.remoteErrSignInTimeout),
       'LOGIN_CANCELLED' => e(HostLinkErrorKind.other, appL10n.remoteSignInCancelled),
       'OAUTH_PROVIDER_UNAVAILABLE' => e(HostLinkErrorKind.unavailable, appL10n.remoteErrBrowserSignInUnsupported),
+      // Browser device sign-in: a lost exchange response can be retried once
+      // within the code's lifetime, but an expired or already-cancelled
+      // session must be restarted from scratch.
+      'DEVICE_LOGIN_EXPIRED' => e(HostLinkErrorKind.other, appL10n.remoteErrDeviceLoginExpired, retryable: false),
+      'DEVICE_LOGIN_CONFLICT' => e(HostLinkErrorKind.other, appL10n.remoteErrDeviceLoginConflict, retryable: false),
       'RATE_LIMITED' => e(HostLinkErrorKind.unreachable, appL10n.remoteErrTooManyRequests, retryable: true),
+      // Login-time failures from the Server's upstream identity check. These
+      // are distinct from the session-expiry codes above: the account exists
+      // but the sign-in itself is refused for a specific reason.
+      'AUTH_INVALID' => e(HostLinkErrorKind.authFailed, appL10n.remoteErrEmailPassword, retryable: false),
+      'ACCOUNT_DISABLED' => e(HostLinkErrorKind.other, appL10n.remoteErrAccountDisabled, retryable: false),
+      'EMAIL_NOT_VERIFIED' => e(HostLinkErrorKind.other, appL10n.remoteErrEmailNotVerified, retryable: false),
+      'AUTH_ACCESS_DENIED' => e(
+        HostLinkErrorKind.other,
+        appL10n.remoteErrAccountUnavailable,
+        retryable: false,
+      ),
+      'ACCOUNT_IDENTITY_CONFLICT' => e(
+        HostLinkErrorKind.other,
+        appL10n.remoteErrAccountIdentityConflict,
+        retryable: false,
+      ),
+      'AUTH_SERVICE_UNAVAILABLE' => e(
+        HostLinkErrorKind.unavailable,
+        appL10n.remoteErrAuthServiceUnavailable,
+        retryable: true,
+      ),
+      'REAUTH_REQUIRED' => e(HostLinkErrorKind.notLoggedIn, appL10n.remoteErrReauthRequired, retryable: false),
       _ when failure.retryable => e(HostLinkErrorKind.unreachable, appL10n.remoteErrHostUnreachable),
       _ => e(HostLinkErrorKind.other, appL10n.remoteErrRemoteConnection),
     };

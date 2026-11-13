@@ -286,13 +286,13 @@ void main() {
   });
 
   test('a code from another Server, or a Server without pairing, is refused before any claim', () async {
-    final other = parsePairingScan('https://dsh.r2049.cn/pair#v1.$ticket');
+    final other = parsePairingScan('https://agent.xcodex.vip/pair#v1.$ticket');
     await expectLater(
       account.resolvePairing(other),
       throwsA(
         isA<PairingException>()
             .having((e) => e.code, 'code', 'PAIRING_SERVER_MISMATCH')
-            .having((e) => e.origin, 'origin', Uri.parse('https://dsh.r2049.cn')),
+            .having((e) => e.origin, 'origin', Uri.parse('https://agent.xcodex.vip')),
       ),
     );
     server.capabilities = {'devicePairing': 'dsh-pairing-v1'};

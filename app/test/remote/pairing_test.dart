@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../account/support.dart' show FixedAccount;
 import '../chat/support/harness.dart';
 
-const _code = 'https://dsh.r2049.cn/pair#v1.AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8';
+const _code = 'https://agent.xcodex.vip/pair#v1.AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8';
 const _fingerprint = '0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0';
 
 /// The pairing half of the Remote backend, scripted by the test.
@@ -33,7 +33,7 @@ class _Backend extends UnavailableRelayBackend implements RelayPairingBackend {
   bool get available => true;
 
   @override
-  String get serverLabel => 'dsh.r2049.cn';
+  String get serverLabel => 'agent.xcodex.vip';
 
   @override
   Future<bool> supportsPairing() async => true;
@@ -43,7 +43,7 @@ class _Backend extends UnavailableRelayBackend implements RelayPairingBackend {
     resolved.add(scanned);
     if (resolveError case final e?) throw e;
     return const RelayPairingOffer(
-      server: 'https://dsh.r2049.cn',
+      server: 'https://agent.xcodex.vip',
       hostName: 'Studio Mac',
       hostPlatform: 'desktop',
       fingerprint: _fingerprint,
@@ -203,12 +203,11 @@ void main() {
       ],
     );
 
-    testWidgets('without a DeepSeek sign-in the camera stays closed', (tester) async {
+    testWidgets('without a DeepSeek sign-in the camera opens straight away', (tester) async {
       usePhoneView(tester);
       await tester.pumpWidget(app(_Backend(), account: const AccountState(phase: AccountPhase.signedOut)));
       await tester.pumpAndSettle();
-      expect(find.text('先登录 DeepSeek 账号'), findsOneWidget);
-      expect(find.text('stand-in camera'), findsNothing);
+      expect(find.text('stand-in camera'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -228,7 +227,7 @@ void main() {
 
       expect(find.text('要连接这台电脑吗？'), findsOneWidget);
       expect(find.text('Studio Mac'), findsOneWidget);
-      expect(find.text('https://dsh.r2049.cn'), findsOneWidget);
+      expect(find.text('https://agent.xcodex.vip'), findsOneWidget);
       expect(
         find.textContaining('0f1e 2d3c 4b5a 6978\n8796 a5b4 c3d2 e1f0\n'),
         findsOneWidget,

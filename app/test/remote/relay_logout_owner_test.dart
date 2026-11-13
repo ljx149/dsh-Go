@@ -318,7 +318,7 @@ Future<void> _confirmLogout(WidgetTester tester, _Fixture fixture, {required int
 Future<RelayUser> _signInAgain(WidgetTester tester, _Fixture fixture) async {
   expect(fixture.uiSignedIn, isFalse);
   expect(fixture.container.read(relayServerProvider) == fixture.server.url.origin, isTrue);
-  await tester.runAsync(() => tester.tap(find.text(appL10n.remoteSelfHostedEmailSignIn)));
+  await tester.runAsync(() => tester.tap(find.text(appL10n.remoteXcodexSignInTitle)));
   await _frames(tester);
   expect(find.byType(SelfHostedLoginSheet), findsOneWidget);
   final fields = find.descendant(of: find.byType(SelfHostedLoginSheet), matching: find.byType(TextField));

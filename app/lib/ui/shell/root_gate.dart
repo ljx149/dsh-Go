@@ -46,34 +46,11 @@ OnboardingStep? initialOnboardingStep({
   required OnboardingPrefs prefs,
   bool hasCustomProvider = false,
 }) {
-  final installedCurrent = status.installedVersion != null && status.installedVersion == status.bundledVersion;
-  final needsRuntime = switch (status.phase) {
-    RuntimePhase.notInstalled || RuntimePhase.installing => true,
-    RuntimePhase.error => !installedCurrent,
-    _ => false,
-  };
-  // Only a first install (nothing older to upgrade) that was not given up for
-  // a remote host.
-  if (prefs.setupStep case final resume?
-      when !prefs.localDeclined && (installedCurrent || status.installedVersion == null)) {
-    final connected = hasApiKey || hasCustomProvider || prefs.keySkipped;
-    return switch (resume) {
-      SetupStep.appearance => OnboardingStep.appearance,
-      SetupStep.access => OnboardingStep.access,
-      SetupStep.connect when !connected => OnboardingStep.apiKey,
-      _ => needsRuntime ? OnboardingStep.finishing : null,
-    };
-  }
-  if (needsRuntime) {
-    // An install that was running when the app went away carries on.
-    if (status.phase == RuntimePhase.installing) return OnboardingStep.runtime;
-    // Runs without it (also after leaving a failed upgrade for a remote host).
-    if (prefs.localDeclined) return null;
-    // An upgrade (an older rootfs exists) skips the welcome and the choice.
-    if (!runtimeStepAsks(status)) return OnboardingStep.runtime;
-    return prefs.welcomeSeen ? OnboardingStep.runtime : OnboardingStep.welcome;
-  }
-  if (!hasApiKey && !hasCustomProvider && !prefs.keySkipped) return OnboardingStep.apiKey;
+  // AgentPort is remote-only: the onboarding flow (runtime unpack, DeepSeek
+  // key entry, 本机/远程 choice) is skipped entirely. The home shell shows
+  // the DSH Remote sign-in card and the remote host list directly. The
+  // [OnboardingFlow] widgets still exist for the local-runtime path but are
+  // never reached — returning null here means "go to home".
   return null;
 }
 

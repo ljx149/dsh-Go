@@ -96,24 +96,17 @@ void main() {
     expect(find.text('登录 DSH Remote'), findsOneWidget);
   });
 
-  testWidgets('signed-out card offers one button per sign-in provider, GitHub first', (tester) async {
+  testWidgets('signed-out card offers the xcodex device sign-in button', (tester) async {
     relay.user = null;
     await pump(tester, const RemoteScreen());
     await frames(tester, 3);
-    for (final provider in ['GitHub', '知乎', 'Google']) {
-      expect(find.widgetWithText(FilledButton, '使用 $provider 登录'), findsOneWidget);
-    }
-    expect(
-      tester.getTopLeft(find.text('使用 GitHub 登录')).dy,
-      lessThan(tester.getTopLeft(find.text('使用 知乎 登录')).dy),
-    );
-    await tester.tap(find.text('使用 GitHub 登录'));
-    await tester.pump();
-    expect(relay.loginProviderIds, ['github']);
-    // Let the flow finish so nothing keeps the controller alive after teardown.
-    relay.pendingLogin!.complete(sampleRelayUser);
+    expect(find.widgetWithText(FilledButton, '使用 xcodex 账号登录'), findsOneWidget);
+    await tester.tap(find.text('使用 xcodex 账号登录'));
+    await frames(tester);
+    expect(relay.deviceLogins, 1);
+    relay.pendingDeviceLogin!.complete(sampleRelayUser);
     await frames(tester, 4);
-    expect(relay.user?.provider, 'github');
+    expect(relay.user, sampleRelayUser);
   });
 
   testWidgets('host-list failure shows retry rather than the empty account copy', (tester) async {
@@ -203,35 +196,32 @@ void main() {
     expect(c.read(activeHostProvider), const HostRef.relay('mac'));
   });
 
-  testWidgets('self-hosted server: email + password sign-in switches the server', (tester) async {
+  testWidgets('the sign-in button starts the xcodex device login and keeps the server', (tester) async {
     relay.user = null;
     final c = await pump(tester, const RemoteScreen());
     await frames(tester, 3);
-    await tester.tap(find.text('自建服务器 · 邮箱登录'));
+    await tester.tap(find.text('使用 xcodex 账号登录'));
     await frames(tester);
-    await tester.enterText(find.byType(TextField).at(0), 'remote.example.com');
-    await tester.enterText(find.byType(TextField).at(1), 'me@example.com');
-    await tester.enterText(find.byType(TextField).at(2), 'pw');
-    await tester.tap(find.widgetWithText(FilledButton, '登录'));
-    await frames(tester);
-    expect(relay.passwordLogins, [('me@example.com', 'pw')]);
-    expect(c.read(relayServerProvider), 'https://remote.example.com');
-    expect(find.text('自建服务器'), findsNothing, reason: 'sheet closed');
+    expect(relay.deviceLogins, 1);
+    expect(find.text('自建服务器'), findsNothing, reason: 'no self-hosted sheet');
+    relay.pendingDeviceLogin!.complete(sampleRelayUser);
+    await frames(tester, 4);
+    expect(c.read(relayServerProvider), isNull);
+    expect(relay.user, sampleRelayUser);
   });
 
-  testWidgets('self-hosted server: a bad address is explained, nothing is sent', (tester) async {
+  testWidgets('a started device login keeps the selected self-hosted server', (tester) async {
     relay.user = null;
-    await pump(tester, const RemoteScreen());
+    final c = await pump(tester, const RemoteScreen());
     await frames(tester, 3);
-    await tester.tap(find.text('自建服务器 · 邮箱登录'));
+    c.read(relayServerProvider.notifier).useServer('https://remote.example.com');
+    await frames(tester, 2);
+    await tester.tap(find.text('使用 xcodex 账号登录'));
     await frames(tester);
-    await tester.enterText(find.byType(TextField).at(0), 'http://public.example.com');
-    await tester.enterText(find.byType(TextField).at(1), 'me@example.com');
-    await tester.enterText(find.byType(TextField).at(2), 'pw');
-    await tester.tap(find.widgetWithText(FilledButton, '登录'));
-    await frames(tester);
-    expect(find.textContaining('服务器地址无效'), findsOneWidget);
-    expect(relay.passwordLogins, isEmpty);
+    expect(relay.deviceLogins, 1);
+    relay.pendingDeviceLogin!.complete(sampleRelayUser);
+    await frames(tester, 4);
+    expect(c.read(relayServerProvider), 'https://remote.example.com');
   });
 
   testWidgets('saving a new SSH host keeps the password out of preferences', (tester) async {

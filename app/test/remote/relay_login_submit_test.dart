@@ -71,7 +71,7 @@ void main() {
       final c = ProviderScope.containerOf(
         tester.element(find.byType(MaterialApp)),
       );
-      await tester.tap(find.text('自建服务器 · 邮箱登录'));
+      await tester.tap(find.text('使用 xcodex 账号登录'));
       await _frames(tester);
       await _fill(tester, 'a.example.com', 'a@example.com', 'password-a');
       await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -90,7 +90,7 @@ void main() {
       // Closing a busy sheet is allowed; a different State may submit normally.
       Navigator.of(tester.element(find.byType(SelfHostedLoginSheet))).pop();
       await _frames(tester);
-      await tester.tap(find.text('自建服务器 · 邮箱登录'));
+      await tester.tap(find.text('使用 xcodex 账号登录'));
       await _frames(tester);
       await _fill(tester, 'c.example.com', 'c@example.com', 'password-c');
       await tester.testTextInput.receiveAction(TextInputAction.done);

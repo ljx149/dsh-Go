@@ -46,6 +46,14 @@
   "remoteErrTooManyRequests": "Too many requests",
   "remoteErrHostUnreachable": "Can’t reach the remote host",
   "remoteErrRemoteConnection": "Couldn’t connect remotely",
+  "remoteErrAccountDisabled": "This account has been disabled",
+  "remoteErrEmailNotVerified": "Please verify your email first",
+  "remoteErrAccountIdentityConflict": "Account identity conflict. Contact support.",
+  "remoteErrAccountUnavailable": "This account cannot use the service right now",
+  "remoteErrAuthServiceUnavailable": "The sign-in service is temporarily unavailable. Try again later.",
+  "remoteErrReauthRequired": "Sign-in expired. Please sign in again.",
+  "remoteErrDeviceLoginExpired": "The sign-in session expired. Please try again.",
+  "remoteErrDeviceLoginConflict": "The sign-in session is in use. Please try again.",
   "remoteOnline": "Online",
   "remoteOffline": "Offline",
   "remoteUnavailable": "Unavailable",
@@ -287,6 +295,8 @@
   "remoteRelaySignInTitle": "Sign in to DSH Remote",
   "remoteRelaySignInHelp": "No network setup. End-to-end encrypted connection.",
   "remoteBrowserSignIn": "Sign in in browser",
+  "remoteXcodexSignInTitle": "Sign in with your xcodex account",
+  "remoteXcodexSignInHelp": "Enter your email and password; the Server verifies the account and issues credentials",
   "remoteSignInWithProvider": "Continue with {provider}",
   "@remoteSignInWithProvider": {
     "placeholders": {

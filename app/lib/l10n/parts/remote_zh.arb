@@ -60,6 +60,14 @@
   "remoteErrTooManyRequests": "请求太频繁",
   "remoteErrHostUnreachable": "没能连上远程主机",
   "remoteErrRemoteConnection": "远程连接失败",
+  "remoteErrAccountDisabled": "账号已停用，无法登录",
+  "remoteErrEmailNotVerified": "请先完成邮箱验证",
+  "remoteErrAccountIdentityConflict": "账号身份冲突，请联系支持",
+  "remoteErrAccountUnavailable": "这个账号暂不能使用服务",
+  "remoteErrAuthServiceUnavailable": "登录服务暂不可用，请稍后再试",
+  "remoteErrReauthRequired": "登录已失效，请重新登录",
+  "remoteErrDeviceLoginExpired": "登录会话已过期，请重新登录",
+  "remoteErrDeviceLoginConflict": "登录会话冲突，请重新发起登录",
   "remoteOnline": "在线",
   "remoteOffline": "离线",
   "remoteUnavailable": "暂不可用",
@@ -651,6 +659,8 @@
   "remoteRelaySignInTitle": "登录 DSH Remote",
   "remoteRelaySignInHelp": "无需配置网络，连接端到端加密",
   "remoteBrowserSignIn": "在浏览器中登录",
+  "remoteXcodexSignInTitle": "使用 xcodex 账号登录",
+  "remoteXcodexSignInHelp": "输入邮箱和密码，服务器校验账号并签发凭证",
   "remoteSignInWithProvider": "使用 {provider} 登录",
   "@remoteSignInWithProvider": {
     "placeholders": {

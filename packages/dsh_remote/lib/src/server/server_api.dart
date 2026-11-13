@@ -127,11 +127,72 @@ final class QrComplete extends QrPollResult {
 }
 
 class AccountLogin {
-  const AccountLogin({required this.token, required this.account, this.expiresAt});
+  const AccountLogin({required this.token, required this.account, this.expiresAt, this.userId});
 
   final String token;
   final String account;
   final DateTime? expiresAt;
+
+  /// Stable user identifier the Server derives from the upstream xcodex
+  /// identity. Null on older deployments (or servers that have not yet
+  /// wired the upstream check) — callers must treat it as optional and
+  /// fall back to the email/account as the account-isolation key.
+  final String? userId;
+}
+
+/// A started browser device sign-in. Open [loginUrl] in a browser; keep
+/// [pickupToken] on the phone (never in a URL, log or the browser). The
+/// Server expires it at [expiresAt].
+class DeviceLoginRequest {
+  const DeviceLoginRequest({required this.requestId, required this.loginUrl, required this.pickupToken, required this.expiresAt});
+
+  final String requestId;
+  final Uri loginUrl;
+  final String pickupToken;
+  final DateTime expiresAt;
+}
+
+sealed class DeviceLoginPoll {
+  const DeviceLoginPoll();
+}
+
+final class DeviceLoginPollPending extends DeviceLoginPoll {
+  const DeviceLoginPollPending();
+}
+
+final class DeviceLoginPollExpired extends DeviceLoginPoll {
+  const DeviceLoginPollExpired();
+}
+
+final class DeviceLoginPollCancelled extends DeviceLoginPoll {
+  const DeviceLoginPollCancelled();
+}
+
+final class DeviceLoginPollReady extends DeviceLoginPoll {
+  const DeviceLoginPollReady({required this.code, required this.state});
+
+  /// One-shot exchange code; valid once until it is exchanged.
+  final String code;
+
+  /// The echoed state the phone sent in [DeviceDescriptor]'s start call.
+  final String state;
+}
+
+/// Device credentials returned by the exchange. The phone stores these
+/// through its normal credential write; the Server already bound the
+/// account to this device.
+class DeviceLoginCredentials {
+  const DeviceLoginCredentials({required this.deviceId, required this.account, required this.tokens, this.userId});
+
+  /// This device's id (the Server reuses the one from `startDeviceLogin`).
+  final String deviceId;
+
+  /// Account name as the Server reports it (email or xcodex account id).
+  final String account;
+
+  /// Stable upstream xcodex user id, when the Server reports one.
+  final String? userId;
+  final DeviceTokenPair tokens;
 }
 
 /// Device descriptor sent at registration. Client descriptors never
@@ -409,10 +470,18 @@ class RemoteServerApi {
     throw const RemoteApiException('INVALID_MESSAGE', 'The server returned an invalid QR sign-in status.');
   }
 
-  /// Email/password sign-in (self-hosted Server; also the hosted one).
+  /// Email/password sign-in (self-hosted Server; also the hosted one). The
+  /// Server may make several sequential upstream identity requests before
+  /// answering, so this call gets its own longer deadline than the rest of
+  /// the API.
   Future<AccountLogin> loginWithPassword(String email, String password) async {
     final body = asMap(
-      await _request('POST', '/api/v1/auth/login', body: {'email': email.trim(), 'password': password}),
+      await _request(
+        'POST',
+        '/api/v1/auth/login',
+        body: {'email': email.trim(), 'password': password},
+        timeout: const Duration(seconds: 25),
+      ),
     );
     final token = asString(body?['token']);
     final account = asString(body?['account']);
@@ -424,8 +493,133 @@ class RemoteServerApi {
       token: token,
       account: account,
       expiresAt: expiresAt == null ? null : DateTime.fromMillisecondsSinceEpoch(expiresAt),
+      userId: asString(body['userId']),
     );
   }
+
+  /// `POST /api/v1/auth/device/start`: begins a browser device sign-in.
+  /// [device] is this phone's own descriptor (reused, not recreated) without
+  /// an owner id; [codeChallenge] is base64url(SHA-256(verifier)) without
+  /// padding; [state] is an opaque value the Server echoes back on pickup.
+  /// Returns the request handle: [DeviceLoginRequest.loginUrl] is opened in a
+  /// browser, [DeviceLoginRequest.pickupToken] stays on the phone only.
+  Future<DeviceLoginRequest> startDeviceLogin(DeviceDescriptor device, String codeChallenge, String state, {String? redirectUri}) async {
+    final body = asMap(
+      await _request('POST', '/api/v1/auth/device/start', body: {
+        'device': device.toJson(),
+        'codeChallenge': codeChallenge,
+        'state': state,
+        'redirectUri': ?redirectUri,
+      }),
+    );
+    final requestId = asString(body?['requestId']);
+    final loginUrl = asString(body?['loginUrl']);
+    final pickupToken = asString(body?['pickupToken']);
+    final expiresAt = asInt(body?['expiresAt']);
+    if (requestId == null ||
+        requestId.isEmpty ||
+        loginUrl == null ||
+        Uri.tryParse(loginUrl) == null ||
+        loginUrl.length > 4096 ||
+        pickupToken == null ||
+        pickupToken.length < 16 ||
+        pickupToken.length > 8192 ||
+        expiresAt == null ||
+        expiresAt <= 0) {
+      throw const RemoteApiException('INVALID_MESSAGE', 'The server returned an invalid device login request.');
+    }
+    return DeviceLoginRequest(
+      requestId: requestId,
+      loginUrl: Uri.parse(loginUrl),
+      pickupToken: pickupToken,
+      expiresAt: DateTime.fromMillisecondsSinceEpoch(expiresAt),
+    );
+  }
+
+  /// `POST /api/v1/auth/device/poll`: waits for the account to authorize this
+  /// device in a browser. [code] is returned exactly once, together with the
+  /// echoed [state]. A pending/expired/cancelled status never consumes the
+  /// request.
+  Future<DeviceLoginPoll> pollDeviceLogin(String requestId, String pickupToken) async {
+    final body = asMap(await _request('POST', '/api/v1/auth/device/poll', body: {'requestId': requestId, 'pickupToken': pickupToken}));
+    final status = asString(body?['status']);
+    switch (status) {
+      case 'pending':
+        return const DeviceLoginPollPending();
+      case 'expired':
+        return const DeviceLoginPollExpired();
+      case 'cancelled':
+        return const DeviceLoginPollCancelled();
+      case 'ready':
+        final code = asString(body?['code']);
+        final state = asString(body?['state']);
+        if (code == null || code.isEmpty || state == null) {
+          throw const RemoteApiException('INVALID_MESSAGE', 'The server returned an incomplete device login result.');
+        }
+        return DeviceLoginPollReady(code: code, state: state);
+      default:
+        throw const RemoteApiException('INVALID_MESSAGE', 'The server returned an invalid device login status.');
+    }
+  }
+
+  /// `POST /api/v1/auth/device/exchange`: swaps the one-shot [code] for this
+  /// device's credentials, proving possession of [codeVerifier]. The Server
+  /// binds the account to the [device] from [startDeviceLogin]; the phone
+  /// never re-sends an identity here.
+  Future<DeviceLoginCredentials> exchangeDeviceLogin(
+    String requestId,
+    String pickupToken,
+    String code,
+    String codeVerifier,
+  ) async {
+    final body = asMap(
+      await _request(
+        'POST',
+        '/api/v1/auth/device/exchange',
+        body: {
+          'requestId': requestId,
+          'pickupToken': pickupToken,
+          'code': code,
+          'codeVerifier': codeVerifier,
+        },
+      ),
+    );
+    final deviceId = asString(body?['deviceId']);
+    final account = asString(body?['account']);
+    if (deviceId == null || deviceId.isEmpty || account == null || account.isEmpty) {
+      throw const RemoteApiException('INVALID_MESSAGE', 'The server returned invalid device login credentials.');
+    }
+    final tokens = DeviceTokenPair.parse({
+      'accessToken': body?['accessToken'],
+      'accessTokenExpiresAt': body?['accessTokenExpiresAt'],
+      'refreshToken': body?['refreshToken'],
+      'refreshTokenExpiresAt': body?['refreshTokenExpiresAt'],
+    });
+    return DeviceLoginCredentials(deviceId: deviceId, account: account, userId: asString(body!['userId']), tokens: tokens);
+  }
+
+  /// `POST /api/v1/auth/device/cancel`: gives up a not-yet-exchanged request.
+  /// The Server answers `DEVICE_LOGIN_CONFLICT` for a request that was already
+  /// exchanged (the device then stays registered).
+  Future<void> cancelDeviceLogin(String requestId, String pickupToken) async {
+    try {
+      await _request('POST', '/api/v1/auth/device/cancel', body: {'requestId': requestId, 'pickupToken': pickupToken});
+    } on RemoteApiException catch (error) {
+      if (error.code == 'DEVICE_LOGIN_CONFLICT' || error.code == 'DEVICE_LOGIN_INVALID') return;
+      rethrow;
+    }
+  }
+
+  /// `POST /api/v1/auth/logout`: revokes the current login session. This is
+  /// separate from `DELETE /api/v1/devices/self` (which revokes a device
+  /// identity); a session is the account web token, a device is this phone's
+  /// registered credentials. Returns nothing on success; the Server must
+  /// treat a missing session as an idempotent no-op, not an error.
+  Future<void> logoutSession(String accountToken) => _request(
+    'POST',
+    '/api/v1/auth/logout',
+    bearer: accountToken,
+  );
 
   /// `GET /api/v1/auth/me` with an account (web) token → account name.
   Future<String> accountMe(String accountToken) async {
@@ -614,11 +808,13 @@ class RemoteServerApi {
     String? rawJson,
     Map<String, String> headers = const {},
     String? bearer,
+    Duration? timeout,
   }) async {
     final uri = serverUrl.resolve(path);
     if (uri.origin != serverUrl.origin) {
       throw const RemoteApiException('INVALID_MESSAGE', 'Refusing a cross-origin Server request.');
     }
+    final deadline = timeout ?? this.timeout;
     HttpClientRequest? request;
     TimeoutException? expired;
     Future<(int, String)> run() async {
@@ -659,7 +855,7 @@ class RemoteServerApi {
     final int status;
     final String text;
     try {
-      (status, text) = await run().timeout(timeout);
+      (status, text) = await run().timeout(deadline);
     } on TimeoutException catch (error) {
       expired = error;
       request?.abort();

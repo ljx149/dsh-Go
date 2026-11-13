@@ -702,7 +702,7 @@ class TrafficRelayBackend implements RelayBackend {
   bool get available => true;
 
   @override
-  String get serverLabel => 'dsh.r2049.cn';
+  String get serverLabel => 'agent.xcodex.vip';
 
   @override
   Future<RelayUser?> currentUser() async => const RelayUser(id: 'u1', displayName: 'chimney', provider: 'github');
@@ -715,6 +715,9 @@ class TrafficRelayBackend implements RelayBackend {
 
   @override
   Future<RelayUser> loginWithPassword(String email, String password) => throw UnimplementedError();
+
+  @override
+  Future<RelayLoginSession> startDeviceLogin() => throw UnimplementedError();
 
   @override
   Future<void> logout() async {}

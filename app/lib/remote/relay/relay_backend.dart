@@ -21,13 +21,18 @@ class RelayAuthProvider {
 
 /// Signed-in DSH Remote (ds-harness-remote) account.
 class RelayUser {
-  const RelayUser({required this.id, required this.displayName, this.provider});
+  const RelayUser({required this.id, required this.displayName, this.provider, this.userId});
 
   final String id;
   final String displayName;
 
   /// `github` / `zhihu` / `google` / `password`, when known.
   final String? provider;
+
+  /// Stable user identifier the Server derives from the upstream xcodex
+  /// identity, used to isolate account data across accounts. Null on older
+  /// deployments (and on QR sign-ins, which do not report one).
+  final String? userId;
 }
 
 /// Whether this phone already trusts a Host's identity key.
@@ -133,6 +138,14 @@ abstract class RelayBackend {
   /// Email + password: self-hosted servers (and invited accounts).
   Future<RelayUser> loginWithPassword(String email, String password);
 
+  /// Browser device sign-in (the Server's xcodex account flow). The app opens
+  /// [RelayLoginSession.loginUrl] in a browser, awaits
+  /// [RelayLoginSession.completed] and stores the returned device
+  /// credentials. Defaults to "unsupported" so a backend without it keeps
+  /// every other sign-in path.
+  Future<RelayLoginSession> startDeviceLogin() =>
+      Future.error(HostLinkError(HostLinkErrorKind.unavailable, appL10n.remoteUnavailable));
+
   Future<void> logout();
 
   /// Hosts on the account with live presence. [refresh] bypasses caches.
@@ -192,6 +205,9 @@ class UnavailableRelayBackend implements RelayBackend {
 
   @override
   Future<RelayUser> loginWithPassword(String email, String password) => Future.error(_error);
+
+  @override
+  Future<RelayLoginSession> startDeviceLogin() => Future.error(_error);
 
   @override
   Future<void> logout() async {}

@@ -631,14 +631,21 @@ class RelayAccountController extends AsyncNotifier<RelayAccountState> {
 
   /// Opens the sign-in page of [providerId] (default: the Server's first
   /// provider) and waits for the account to authorize this device.
-  Future<void> login({String? providerId}) async {
+  Future<void> login({String? providerId}) => _startLogin(() => _backend.login(providerId: providerId));
+
+  /// The xcodex account's browser device sign-in: opens the Server's login
+  /// page, waits for the account to authorize this device, and stores the
+  /// device credentials the exchange returns.
+  Future<void> startDeviceLogin() => _startLogin(_backend.startDeviceLogin);
+
+  Future<void> _startLogin(Future<RelayLoginSession> Function() openSession) async {
     if (_now.loggingIn) return;
     final backend = _backend;
     final epoch = ++_epoch;
     ref.read(readListCredentialEpochProvider.notifier).advance();
     state = AsyncData(_now.copyWith(loggingIn: true, error: () => null));
     try {
-      final session = await backend.login(providerId: providerId);
+      final session = await openSession();
       // Cancellation may finish this future before the browser returns, or
       // while an obsolete login is still creating its server session.
       session.completed.ignore();

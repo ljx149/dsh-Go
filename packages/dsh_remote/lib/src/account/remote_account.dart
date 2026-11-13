@@ -35,7 +35,13 @@ final _accountStorageStates = Expando<Map<String, _AccountStorageState>>();
 
 /// The signed-in account on one Server.
 class RemoteUser {
-  const RemoteUser({required this.account, required this.deviceId, required this.serverUrl, this.provider});
+  const RemoteUser({
+    required this.account,
+    required this.deviceId,
+    required this.serverUrl,
+    this.provider,
+    this.userId,
+  });
 
   /// Account name (email or OAuth account id) as the Server reports it.
   final String account;
@@ -47,6 +53,11 @@ class RemoteUser {
   /// The provider this device signed in with (github, zhihu, google, password);
   /// null for credentials stored before providers were recorded.
   final String? provider;
+
+  /// Stable user identifier from the Server (upstream xcodex identity), used
+  /// to isolate account data across accounts on the same Server. Null on
+  /// older deployments that do not report one.
+  final String? userId;
 
   @override
   String toString() => 'RemoteUser($account on $serverUrl)';
@@ -288,9 +299,16 @@ class _Credentials {
     required this.refreshToken,
     required this.refreshTokenExpiresAt,
     this.provider,
+    this.userId,
   });
 
-  factory _Credentials.fromTokens(String deviceId, String account, DeviceTokenPair tokens, {String? provider}) =>
+  factory _Credentials.fromTokens(
+    String deviceId,
+    String account,
+    DeviceTokenPair tokens, {
+    String? provider,
+    String? userId,
+  }) =>
       _Credentials(
         deviceId: deviceId,
         account: account,
@@ -299,6 +317,7 @@ class _Credentials {
         refreshToken: tokens.refreshToken,
         refreshTokenExpiresAt: tokens.refreshTokenExpiresAt,
         provider: provider,
+        userId: userId,
       );
 
   factory _Credentials.fromJson(JsonMap json) => _Credentials(
@@ -309,6 +328,7 @@ class _Credentials {
     refreshToken: json['refreshToken']! as String,
     refreshTokenExpiresAt: DateTime.fromMillisecondsSinceEpoch(json['refreshTokenExpiresAt']! as int),
     provider: asString(json['provider']),
+    userId: asString(json['userId']),
   );
 
   final String deviceId;
@@ -321,6 +341,10 @@ class _Credentials {
   /// Provider the device signed in with, when recorded.
   final String? provider;
 
+  /// Stable user identifier recorded at sign-in; null for credentials
+  /// written before the Server reported one.
+  final String? userId;
+
   JsonMap toJson() => {
     'v': 1,
     'deviceId': deviceId,
@@ -330,6 +354,7 @@ class _Credentials {
     'refreshToken': refreshToken,
     'refreshTokenExpiresAt': refreshTokenExpiresAt.millisecondsSinceEpoch,
     'provider': ?provider,
+    'userId': ?userId,
   };
 }
 
@@ -471,6 +496,7 @@ class RemoteAccount {
       deviceId: credentials.deviceId,
       serverUrl: serverUrl,
       provider: credentials.provider,
+      userId: credentials.userId,
     );
   }
 
@@ -592,19 +618,182 @@ class RemoteAccount {
   /// hosted one supports it for invited accounts).
   Future<RemoteUser> loginWithPassword(String email, String password) => _guard(() async {
     final login = await api.loginWithPassword(email, password);
-    return _registerWithAccountToken(login.token, login.account, provider: 'password');
+    return _registerWithAccountToken(login.token, login.account, provider: 'password', userId: login.userId);
   });
 
-  Future<RemoteUser> _registerWithAccountToken(
-    String accountToken,
-    String account, {
+  /// Browser device sign-in (the Server's xcodex account flow, v1). The phone
+  /// opens the returned [RemoteLogin.loginUrl] in a browser, polls until the
+  /// account authorizes it, exchanges the one-shot code and stores the device
+  /// credentials — no account web token ever crosses to this phone.
+  ///
+  /// Reuses this device's identity when the upstream user matches the stored
+  /// one (a re-login); a different user rotates it, so the same device is
+  /// never registered under two accounts. A not-yet-exchanged request is
+  /// cancelled at [RemoteLogin.cancel]; an already-exchanged one stays
+  /// registered on the Server.
+  Future<RemoteLogin> startDeviceLogin() => _guard(() async {
+    await _restore();
+    // Device login is an explicit re-authorization: the phone signs in to the
+    // account the browser authorized, and the exchange binds the Server's own
+    // device identity to it. The phone reuses its stored identity; the commit
+    /// checks that the Server returned exactly it.
+    final identity = await _ensureIdentity();
+    final verifier = toBase64Url(randomBytes(32));
+    final challenge = toBase64Url(hashes.sha256.convert(utf8.encode(verifier)).bytes);
+    final state = toBase64Url(randomBytes(24));
+    final session = await api.startDeviceLogin(_descriptor(identity), challenge, state);
+    final completer = Completer<RemoteUser>();
+    var cancelled = false;
+    var committing = false;
+    const cancelledError = RemoteConnectException(
+      RemoteFailure('LOGIN_CANCELLED', 'Sign-in was cancelled.', retryable: true),
+    );
+    void checkCancelled() {
+      if (cancelled) throw cancelledError;
+    }
+
+    Future<void> poll() async {
+      while (!cancelled && DateTime.now().isBefore(session.expiresAt)) {
+        DeviceLoginPoll result;
+        try {
+          result = await api.pollDeviceLogin(session.requestId, session.pickupToken);
+        } on RemoteApiException catch (error) {
+          if (!error.retryable) rethrow;
+          await Future<void>.delayed(loginPollInterval);
+          continue;
+        }
+        if (cancelled) return;
+        switch (result) {
+          case DeviceLoginPollReady(:final code, state: final returnedState):
+            if (returnedState != state) {
+              throw const RemoteConnectException(
+                RemoteFailure('INVALID_MESSAGE', 'The Server returned a mismatched device login state.', retryable: false),
+              );
+            }
+            DeviceLoginCredentials credentials;
+            try {
+              credentials = await api.exchangeDeviceLogin(
+                session.requestId,
+                session.pickupToken,
+                code,
+                verifier,
+              );
+            } on RemoteApiException catch (error) {
+              // A lost response can be fetched again until the code expires.
+              if (error.code != 'CONNECTION_FAILED' && !error.retryable) rethrow;
+              await Future<void>.delayed(loginPollInterval);
+              continue;
+            }
+            if (cancelled) return;
+            // The Server must bind exactly the descriptor this device sent.
+            if (credentials.deviceId != identity.deviceId) {
+              throw const RemoteConnectException(
+                RemoteFailure('INVALID_MESSAGE', 'The Server returned another device at device login.', retryable: false),
+              );
+            }
+            final user = await _commitDeviceLogin(
+              credentials,
+              provider: 'xcodex-device',
+              checkCancelled: checkCancelled,
+              beforeCommit: () {
+                checkCancelled();
+                committing = true;
+              },
+            );
+            completer.complete(user);
+            return;
+          case DeviceLoginPollExpired():
+            throw const RemoteConnectException(
+              RemoteFailure('DEVICE_LOGIN_EXPIRED', 'The device login session expired.', retryable: true),
+            );
+          case DeviceLoginPollCancelled():
+            throw const RemoteConnectException(
+              RemoteFailure('LOGIN_CANCELLED', 'The device login was cancelled.', retryable: true),
+            );
+          case DeviceLoginPollPending():
+            await Future<void>.delayed(loginPollInterval);
+        }
+      }
+      if (!cancelled) {
+        throw const RemoteConnectException(
+          RemoteFailure('LOGIN_EXPIRED', 'The device login session expired.', retryable: true),
+        );
+      }
+    }
+
+    unawaited(
+      poll().catchError((Object error) {
+        if (!completer.isCompleted) completer.completeError(_asConnectException(error));
+      }),
+    );
+    return RemoteLogin._(session.loginUrl, 'xcodex-device', session.expiresAt, completer.future, () {
+      if (committing || completer.isCompleted) return;
+      cancelled = true;
+      unawaited(api.cancelDeviceLogin(session.requestId, session.pickupToken).catchError((Object _) {}));
+      completer.completeError(cancelledError);
+    });
+  });
+
+  /// Stores the credentials a successful device exchange returned, without
+  /// registering the device again (the Server did that at exchange time).
+  /// A revoked or conflicting identity is replaced: device login is the
+  /// explicit re-authorization boundary.
+  Future<RemoteUser> _commitDeviceLogin(
+    DeviceLoginCredentials credentials, {
     String? provider,
     void Function()? checkCancelled,
     void Function()? beforeCommit,
   }) async {
     await _restore();
     checkCancelled?.call();
-    var identity = await _ensureIdentity();
+    var identity = _identity;
+    if (identity == null || identity.deviceId != credentials.deviceId) {
+      identity = await _ensureIdentity();
+      if (identity.deviceId != credentials.deviceId) {
+        throw const RemoteConnectException(
+          RemoteFailure('INVALID_MESSAGE', 'The Server returned another device at device login.', retryable: false),
+        );
+      }
+    }
+    checkCancelled?.call();
+    await _saveCredentials(
+      _Credentials.fromTokens(
+        identity.deviceId,
+        credentials.account,
+        credentials.tokens,
+        provider: provider,
+        userId: credentials.userId,
+      ),
+      beforeWrite: beforeCommit,
+      signIn: true,
+    );
+    return RemoteUser(
+      account: credentials.account,
+      deviceId: identity.deviceId,
+      serverUrl: serverUrl,
+      provider: provider,
+      userId: credentials.userId,
+    );
+  }
+
+  Future<RemoteUser> _registerWithAccountToken(
+    String accountToken,
+    String account, {
+    String? provider,
+    String? userId,
+    void Function()? checkCancelled,
+    void Function()? beforeCommit,
+  }) async {
+    await _restore();
+    checkCancelled?.call();
+    // Switching the upstream user must not reuse this device's identity: the
+    // same client device would then be registered under two accounts. Reuse
+    // the identity only for the same user, so a re-login is stable. Legacy
+    // credentials and QR sign-ins carry no user id, so they keep the
+    // historical reuse rather than forcing a rotation.
+    final stored = _credentials;
+    final rotate = stored != null && stored.userId != null && stored.userId != userId;
+    var identity = await _ensureIdentity(rotate: rotate);
     checkCancelled?.call();
     DeviceTokenPair tokens;
     try {
@@ -620,11 +809,17 @@ class RemoteAccount {
     }
     checkCancelled?.call();
     await _saveCredentials(
-      _Credentials.fromTokens(identity.deviceId, account, tokens, provider: provider),
+      _Credentials.fromTokens(identity.deviceId, account, tokens, provider: provider, userId: userId),
       beforeWrite: beforeCommit,
       signIn: true,
     );
-    return RemoteUser(account: account, deviceId: identity.deviceId, serverUrl: serverUrl, provider: provider);
+    return RemoteUser(
+      account: account,
+      deviceId: identity.deviceId,
+      serverUrl: serverUrl,
+      provider: provider,
+      userId: userId,
+    );
   }
 
   DeviceDescriptor _descriptor(_Identity identity) => DeviceDescriptor(

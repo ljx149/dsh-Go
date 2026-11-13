@@ -183,7 +183,7 @@ void main() {
     final relayCard = tester.getRect(card('登录 DSH Remote'));
     // One button per sign-in provider; the lowest one sits nearest the credit line.
     final signIn = tester.getRect(find.byWidgetPredicate((w) => w is FilledButton).last);
-    final selfHosted = tester.getRect(find.widgetWithText(TextButton, '自建服务器 · 邮箱登录'));
+    final selfHosted = tester.getRect(find.widgetWithText(FilledButton, '使用 xcodex 账号登录'));
     final sshTitle = tester.getRect(find.text('SSH 主机'));
     final sshCard = tester.getRect(card('添加 SSH 主机'));
     final line = lineRect(tester);
@@ -234,7 +234,7 @@ void main() {
     await pump(tester);
     await tester.tap(find.text('使用 GitHub 登录'));
     await frames(tester, 3);
-    expect(signInPages, [Uri.parse('https://dsh.r2049.cn/qr/scan/abc')]);
+    expect(signInPages, [Uri.parse('https://agent.xcodex.vip/qr/scan/abc')]);
     expect(opened, isEmpty);
     await tester.tap(find.text('取消'));
     await frames(tester, 3);

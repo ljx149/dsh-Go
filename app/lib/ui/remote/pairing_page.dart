@@ -17,10 +17,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../l10n/l10n.dart';
 import '../../remote/relay/relay_backend.dart';
-import '../../state/account_state.dart';
 import '../../state/hosts_state.dart';
 import '../../state/remote_pairing_state.dart';
-import '../account/account_widgets.dart' show AccountTile;
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
@@ -104,27 +102,25 @@ class _RemotePairingPageState extends ConsumerState<RemotePairingPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final flow = ref.watch(remotePairingProvider);
-    final account = ref.watch(accountProvider);
     ref.listen(remotePairingProvider.select((s) => s.host), (_, host) {
       if (host != null) unawaited(_finish(host));
     });
-    // A shown code stays even if the account state flickers.
-    final gated = !account.signedIn && flow.step.index < PairingStep.claiming.index;
-    final Widget body = gated
-        ? const _DeepSeekGate()
-        : switch (flow.step) {
-            PairingStep.scanning => _ScanStep(onCode: ref.read(remotePairingProvider.notifier).scanned),
-            PairingStep.resolving => _Busy(label: l10n.remotePairReading),
-            PairingStep.confirming => _ConfirmStep(offer: flow.offer!),
-            PairingStep.claiming => _Busy(label: l10n.remotePairClaiming),
-            PairingStep.showingCode => _CodeStep(flow: flow),
-            PairingStep.done when _switchFailed => _SwitchFailed(
-              hostName: flow.host?.name ?? '',
-              onRetry: () => unawaited(_finish(flow.host!)),
-            ),
-            PairingStep.done => _Busy(label: l10n.remotePairConnecting(flow.host?.name ?? '')),
-            PairingStep.failed => _FailedStep(error: flow.error!),
-          };
+    // Pairing no longer depends on a local DeepSeek sign-in: the upstream
+    // xcodex identity is verified by the Server, and the phone may sign in
+    // through pairing itself.
+    final Widget body = switch (flow.step) {
+      PairingStep.scanning => _ScanStep(onCode: ref.read(remotePairingProvider.notifier).scanned),
+      PairingStep.resolving => _Busy(label: l10n.remotePairReading),
+      PairingStep.confirming => _ConfirmStep(offer: flow.offer!),
+      PairingStep.claiming => _Busy(label: l10n.remotePairClaiming),
+      PairingStep.showingCode => _CodeStep(flow: flow),
+      PairingStep.done when _switchFailed => _SwitchFailed(
+        hostName: flow.host?.name ?? '',
+        onRetry: () => unawaited(_finish(flow.host!)),
+      ),
+      PairingStep.done => _Busy(label: l10n.remotePairConnecting(flow.host?.name ?? '')),
+      PairingStep.failed => _FailedStep(error: flow.error!),
+    };
     return AppPage.list(
       title: l10n.remotePairTitle,
       subtitle: Text(l10n.remotePairSubtitle),
@@ -174,50 +170,6 @@ class _Busy extends StatelessWidget {
       ],
     ),
   );
-}
-
-/// Pairing uses the DeepSeek account signed in on this phone: ask for it
-/// first. Only its account id goes along, never a password or token.
-class _DeepSeekGate extends ConsumerWidget {
-  const _DeepSeekGate();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _Card(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(l10n.remotePairNeedsDeepSeek, style: theme.textTheme.titleMedium),
-              const SizedBox(height: 6),
-              Text(
-                l10n.remotePairNeedsDeepSeekBody,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        GlassSurface(
-          tier: GlassTier.card,
-          borderRadius: AppShape.radiusLg,
-          child: Material(
-            type: MaterialType.transparency,
-            clipBehavior: Clip.antiAlias,
-            shape: const RoundedSuperellipseBorder(borderRadius: AppShape.radiusLg),
-            child: const AccountTile(),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _ScanStep extends ConsumerWidget {
@@ -285,7 +237,6 @@ class _ConfirmStep extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = DshColors.of(context);
     final notifier = ref.read(remotePairingProvider.notifier);
-    final deepseekUserId = ref.watch(accountProvider.select((a) => a.profile?.id));
     Widget fact(String label, String value) => Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -344,7 +295,7 @@ class _ConfirmStep extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         FilledButton(
-          onPressed: () => unawaited(notifier.confirm(deepseekUserId: deepseekUserId)),
+          onPressed: () => unawaited(notifier.confirm()),
           child: Text(l10n.remotePairConfirm),
         ),
         const SizedBox(height: 4),
