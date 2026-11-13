@@ -28244,6 +28244,54 @@ abstract class L10n {
   /// **'远程连接失败'**
   String get remoteErrRemoteConnection;
 
+  /// No description provided for @remoteErrAccountDisabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'账号已停用，无法登录'**
+  String get remoteErrAccountDisabled;
+
+  /// No description provided for @remoteErrEmailNotVerified.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先完成邮箱验证'**
+  String get remoteErrEmailNotVerified;
+
+  /// No description provided for @remoteErrAccountIdentityConflict.
+  ///
+  /// In zh, this message translates to:
+  /// **'账号身份冲突，请联系支持'**
+  String get remoteErrAccountIdentityConflict;
+
+  /// No description provided for @remoteErrAccountUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个账号暂不能使用服务'**
+  String get remoteErrAccountUnavailable;
+
+  /// No description provided for @remoteErrAuthServiceUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录服务暂不可用，请稍后再试'**
+  String get remoteErrAuthServiceUnavailable;
+
+  /// No description provided for @remoteErrReauthRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录已失效，请重新登录'**
+  String get remoteErrReauthRequired;
+
+  /// No description provided for @remoteErrDeviceLoginExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录会话已过期，请重新登录'**
+  String get remoteErrDeviceLoginExpired;
+
+  /// No description provided for @remoteErrDeviceLoginConflict.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录会话冲突，请重新发起登录'**
+  String get remoteErrDeviceLoginConflict;
+
   /// No description provided for @remoteOnline.
   ///
   /// In zh, this message translates to:
@@ -29653,6 +29701,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'在浏览器中登录'**
   String get remoteBrowserSignIn;
+
+  /// No description provided for @remoteXcodexSignInTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用 xcodex 账号登录'**
+  String get remoteXcodexSignInTitle;
+
+  /// No description provided for @remoteXcodexSignInHelp.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入邮箱和密码，服务器校验账号并签发凭证'**
+  String get remoteXcodexSignInHelp;
 
   /// No description provided for @remoteSignInWithProvider.
   ///

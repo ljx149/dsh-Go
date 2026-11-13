@@ -29,7 +29,7 @@ class FakeRelayBackend implements RelayBackend {
   final List<String> forgotten = [];
 
   @override
-  String get serverLabel => 'dsh.r2049.cn';
+  String get serverLabel => 'agent.xcodex.vip';
 
   @override
   Future<RelayUser?> currentUser() async => user;
@@ -42,7 +42,7 @@ class FakeRelayBackend implements RelayBackend {
     loginProviderIds.add(providerId);
     final completer = pendingLogin = Completer<RelayUser>();
     return RelayLoginSession(
-      loginUrl: Uri.parse('https://dsh.r2049.cn/qr/scan/abc'),
+      loginUrl: Uri.parse('https://agent.xcodex.vip/qr/scan/abc'),
       completed: completer.future.then((u) => user = u),
       onCancel: () {
         if (!completer.isCompleted) completer.completeError(StateError('cancelled'));
@@ -75,6 +75,23 @@ class FakeRelayBackend implements RelayBackend {
   Future<RelayUser> loginWithPassword(String email, String password) async {
     passwordLogins.add((email, password));
     return user = RelayUser(id: 'u-pw', displayName: email, provider: 'password');
+  }
+
+  /// The xcodex browser device sign-in, once requested.
+  int deviceLogins = 0;
+  Completer<RelayUser>? pendingDeviceLogin;
+
+  @override
+  Future<RelayLoginSession> startDeviceLogin() async {
+    deviceLogins++;
+    final completer = pendingDeviceLogin = Completer<RelayUser>();
+    return RelayLoginSession(
+      loginUrl: Uri.parse('https://agent.xcodex.vip/app/login#device_login=x'),
+      completed: completer.future.then((u) => user = u),
+      onCancel: () {
+        if (!completer.isCompleted) completer.completeError(StateError('cancelled'));
+      },
+    );
   }
 
   /// Clients restarted through [reconnect].

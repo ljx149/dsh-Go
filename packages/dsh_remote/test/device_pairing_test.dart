@@ -14,7 +14,7 @@ const hostKey = 'B6N8vBQgk8i3VdwbEOhstCY3StFqqFPtC9_AsrhtHHw';
 const serverKey = 'WGmv9FBUlzLLqu1eXfmzCm2jHLDldCutWtShp2jxpns';
 const phoneKey = 'ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8';
 const sessionId = '019a0000-0000-7000-8000-000000000001';
-final origin = Uri.parse('https://dsh.r2049.cn');
+final origin = Uri.parse('https://agent.xcodex.vip');
 final now = DateTime.fromMillisecondsSinceEpoch(1790000000000);
 
 Map<String, Object?> hostJson({String key = hostKey, String role = 'host'}) => {
@@ -89,24 +89,24 @@ void main() {
 
   group('scanning', () {
     test('the short code yields only its origin and ticket', () {
-      final scan = parsePairingScan('  https://dsh.r2049.cn/pair#v1.$ticket\n');
+      final scan = parsePairingScan('  https://agent.xcodex.vip/pair#v1.$ticket\n');
       expect(scan, isA<PairingTicketScan>().having((s) => s.ticket, 'ticket', ticket));
       expect(scan.origin, origin);
     });
 
     for (final (label, text) in [
-      ('a query', 'https://dsh.r2049.cn/pair?x=1#v1.$ticket'),
-      ('user info', 'https://a@dsh.r2049.cn/pair#v1.$ticket'),
-      ('another path', 'https://dsh.r2049.cn/pair/#v1.$ticket'),
-      ('plain HTTP to a public host', 'http://dsh.r2049.cn/pair#v1.$ticket'),
-      ('another version', 'https://dsh.r2049.cn/pair#v2.$ticket'),
-      ('a non-canonical ticket', 'https://dsh.r2049.cn/pair#v1.${ticket.substring(0, 42)}B'),
-      ('a short ticket', 'https://dsh.r2049.cn/pair#v1.${ticket.substring(1)}'),
+      ('a query', 'https://agent.xcodex.vip/pair?x=1#v1.$ticket'),
+      ('user info', 'https://a@agent.xcodex.vip/pair#v1.$ticket'),
+      ('another path', 'https://agent.xcodex.vip/pair/#v1.$ticket'),
+      ('plain HTTP to a public host', 'http://agent.xcodex.vip/pair#v1.$ticket'),
+      ('another version', 'https://agent.xcodex.vip/pair#v2.$ticket'),
+      ('a non-canonical ticket', 'https://agent.xcodex.vip/pair#v1.${ticket.substring(0, 42)}B'),
+      ('a short ticket', 'https://agent.xcodex.vip/pair#v1.${ticket.substring(1)}'),
       ('another scheme', 'dshgo://pair#v1.$ticket'),
       ('no host', 'https:///pair#v1.$ticket'),
       ('no authority', 'https:/pair#v1.$ticket'),
       ('plain text', 'hello'),
-      ('an oversized code', 'https://dsh.r2049.cn/pair#v1.$ticket${' ' * 5000}'),
+      ('an oversized code', 'https://agent.xcodex.vip/pair#v1.$ticket${' ' * 5000}'),
     ]) {
       test('refuses $label', () {
         expect(
@@ -122,13 +122,13 @@ void main() {
 
     test('the legacy JSON code carries a validated session', () {
       final scan = parsePairingScan(
-        jsonEncode({'type': 'dsh.remote.pairing', 'serverUrl': 'https://dsh.r2049.cn', ...sessionJson()}),
+        jsonEncode({'type': 'dsh.remote.pairing', 'serverUrl': 'https://agent.xcodex.vip', ...sessionJson()}),
         now: now,
       );
       expect(scan, isA<PairingLegacyScan>().having((s) => s.offer.host.name, 'host', 'My computer'));
       expect(
         () => parsePairingScan(
-          jsonEncode({'type': 'dsh.remote.pairing', 'serverUrl': 'https://dsh.r2049.cn/', ...sessionJson()}),
+          jsonEncode({'type': 'dsh.remote.pairing', 'serverUrl': 'https://agent.xcodex.vip/', ...sessionJson()}),
           now: now,
         ),
         throwsA(isA<PairingException>()),

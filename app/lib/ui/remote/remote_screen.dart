@@ -476,14 +476,6 @@ class _RelaySection extends ConsumerWidget {
     );
   }
 
-  static String _providerName(String p) => switch (p) {
-    'github' => 'GitHub',
-    'zhihu' => appL10n.brandZhihu,
-    'google' => 'Google',
-    'password' => appL10n.remoteEmail,
-    _ => p,
-  };
-
   Future<void> _confirmLogout(BuildContext context, RelayAccountController notifier) async {
     final l10n = context.l10n;
     final ok = await showAppDialog<bool>(
@@ -501,13 +493,15 @@ class _RelaySection extends ConsumerWidget {
   }
 }
 
-/// GitHub first (the usual way in), then the Server's own order.
-List<RelayAuthProvider> _orderedProviders(List<RelayAuthProvider> providers) => [
-  for (final p in providers)
-    if (p.id == 'github') p,
-  for (final p in providers)
-    if (p.id != 'github') p,
-];
+/// A sign-in provider's display name, when the Server recorded one.
+String _providerName(String p) => switch (p) {
+  'github' => 'GitHub',
+  'zhihu' => appL10n.brandZhihu,
+  'google' => 'Google',
+  'password' => appL10n.remoteEmail,
+  'xcodex-device' => appL10n.remoteEmail,
+  _ => p,
+};
 
 class _LoginCard extends ConsumerWidget {
   const _LoginCard({required this.account, required this.available, required this.loading});
@@ -564,71 +558,31 @@ class _LoginCard extends ConsumerWidget {
           ],
           if (account.loggingIn)
             _Waiting(url: account.loginUrl, onCancel: notifier.cancelLogin)
-          else if (account.providers.isEmpty)
-            // No provider list (a Server too old to list them, or unreachable):
-            // one generic browser sign-in.
+          else ...[
+            // xcodex is the only sign-in: the account authorizes this phone
+            // in a browser, and the phone picks up its device credentials.
             FilledButton.icon(
-              onPressed: available && !loading ? () => unawaited(notifier.login()) : null,
-              icon: const Icon(AppIcons.openExternal, size: 18),
-              label: Text(available ? l10n.remoteBrowserSignIn : l10n.remoteComingSoon),
-            )
-          else
-            ..._signInButtons(context, account, notifier, enabled: available && !loading),
+              onPressed: available && !loading ? () => unawaited(notifier.startDeviceLogin()) : null,
+              icon: const Icon(AppIcons.lock, size: 18),
+              label: Text(l10n.remoteXcodexSignInTitle),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
+              child: Text(
+                l10n.remoteXcodexSignInHelp,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(color: colors.textTertiary),
+              ),
+            ),
+          ],
           if (account.error case final e?) ...[
             const SizedBox(height: 10),
             Text(e, style: theme.textTheme.bodySmall?.copyWith(color: colors.danger)),
           ],
-          if (available)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Center(
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: colors.textTertiary,
-                    minimumSize: const Size(0, 36),
-                    textStyle: theme.textTheme.labelMedium,
-                  ),
-                  onPressed: account.loggingIn ? null : () => showSelfHostedLogin(context),
-                  child: Text(l10n.remoteSelfHostedEmailSignIn),
-                ),
-              ),
-            ),
         ],
       ),
     );
   }
-}
-
-/// One button per sign-in provider: the first (GitHub, see
-/// [_orderedProviders]) is the page's filled action, the rest stay tonal.
-List<Widget> _signInButtons(
-  BuildContext context,
-  RelayAccountState account,
-  RelayAccountController notifier, {
-  required bool enabled,
-}) {
-  final l10n = context.l10n;
-  final providers = _orderedProviders(account.providers);
-  VoidCallback? tap(RelayAuthProvider provider) =>
-      enabled ? () => unawaited(notifier.login(providerId: provider.id)) : null;
-  const icon = Icon(AppIcons.openExternal, size: 18);
-  return [
-    for (final (i, provider) in providers.indexed) ...[
-      if (i > 0) const SizedBox(height: 8),
-      if (i == 0)
-        FilledButton.icon(
-          onPressed: tap(provider),
-          icon: icon,
-          label: Text(l10n.remoteSignInWithProvider(provider.displayName)),
-        )
-      else
-        FilledButton.tonalIcon(
-          onPressed: tap(provider),
-          icon: icon,
-          label: Text(l10n.remoteSignInWithProvider(provider.displayName)),
-        ),
-    ],
-  ];
 }
 
 class _Waiting extends StatelessWidget {

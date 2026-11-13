@@ -87,7 +87,7 @@ Future<void> _pump(
       WebViewPage(
         url: _url,
         title: '远程控制台',
-        subtitle: 'dsh.r2049.cn',
+        subtitle: 'agent.xcodex.vip',
         allowOpenExternal: true,
         dshWeb: dshWeb,
         phoneLayout: phoneLayout,

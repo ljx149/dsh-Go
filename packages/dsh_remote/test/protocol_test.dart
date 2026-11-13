@@ -277,13 +277,13 @@ void main() {
 
   group('server url', () {
     test('normalizes origins and refuses plain HTTP to public hosts', () {
-      expect(normalizeServerUrl('dsh.r2049.cn/').toString(), 'https://dsh.r2049.cn');
+      expect(normalizeServerUrl('agent.xcodex.vip/').toString(), 'https://agent.xcodex.vip');
       expect(normalizeServerUrl('http://127.0.0.1:8080').toString(), 'http://127.0.0.1:8080');
       expect(() => normalizeServerUrl('http://example.com'), throwsArgumentError);
       expect(() => normalizeServerUrl('https://example.com/app'), throwsArgumentError);
       expect(
-        controlSocketUrl(normalizeServerUrl('https://dsh.r2049.cn')).toString(),
-        'wss://dsh.r2049.cn/ws/v1/connect',
+        controlSocketUrl(normalizeServerUrl('https://agent.xcodex.vip')).toString(),
+        'wss://agent.xcodex.vip/ws/v1/connect',
       );
     });
   });

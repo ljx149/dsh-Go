@@ -15353,6 +15353,30 @@ class L10nZh extends L10n {
   String get remoteErrRemoteConnection => '远程连接失败';
 
   @override
+  String get remoteErrAccountDisabled => '账号已停用，无法登录';
+
+  @override
+  String get remoteErrEmailNotVerified => '请先完成邮箱验证';
+
+  @override
+  String get remoteErrAccountIdentityConflict => '账号身份冲突，请联系支持';
+
+  @override
+  String get remoteErrAccountUnavailable => '这个账号暂不能使用服务';
+
+  @override
+  String get remoteErrAuthServiceUnavailable => '登录服务暂不可用，请稍后再试';
+
+  @override
+  String get remoteErrReauthRequired => '登录已失效，请重新登录';
+
+  @override
+  String get remoteErrDeviceLoginExpired => '登录会话已过期，请重新登录';
+
+  @override
+  String get remoteErrDeviceLoginConflict => '登录会话冲突，请重新发起登录';
+
+  @override
   String get remoteOnline => '在线';
 
   @override
@@ -16152,6 +16176,12 @@ class L10nZh extends L10n {
 
   @override
   String get remoteBrowserSignIn => '在浏览器中登录';
+
+  @override
+  String get remoteXcodexSignInTitle => '使用 xcodex 账号登录';
+
+  @override
+  String get remoteXcodexSignInHelp => '输入邮箱和密码，服务器校验账号并签发凭证';
 
   @override
   String remoteSignInWithProvider(String provider) {

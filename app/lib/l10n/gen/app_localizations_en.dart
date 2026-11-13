@@ -16138,6 +16138,30 @@ class L10nEn extends L10n {
   String get remoteErrRemoteConnection => 'Couldn’t connect remotely';
 
   @override
+  String get remoteErrAccountDisabled => 'This account has been disabled';
+
+  @override
+  String get remoteErrEmailNotVerified => 'Please verify your email first';
+
+  @override
+  String get remoteErrAccountIdentityConflict => 'Account identity conflict. Contact support.';
+
+  @override
+  String get remoteErrAccountUnavailable => 'This account cannot use the service right now';
+
+  @override
+  String get remoteErrAuthServiceUnavailable => 'The sign-in service is temporarily unavailable. Try again later.';
+
+  @override
+  String get remoteErrReauthRequired => 'Sign-in expired. Please sign in again.';
+
+  @override
+  String get remoteErrDeviceLoginExpired => 'The sign-in session expired. Please try again.';
+
+  @override
+  String get remoteErrDeviceLoginConflict => 'The sign-in session is in use. Please try again.';
+
+  @override
   String get remoteOnline => 'Online';
 
   @override
@@ -16972,6 +16996,13 @@ class L10nEn extends L10n {
 
   @override
   String get remoteBrowserSignIn => 'Sign in in browser';
+
+  @override
+  String get remoteXcodexSignInTitle => 'Sign in with your xcodex account';
+
+  @override
+  String get remoteXcodexSignInHelp =>
+      'Enter your email and password; the Server verifies the account and issues credentials';
 
   @override
   String remoteSignInWithProvider(String provider) {

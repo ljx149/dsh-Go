@@ -106,7 +106,7 @@ Future<void> _emailLogin(
   String password,
 ) async {
   await tester.runAsync(
-    () => tester.tap(find.text(appL10n.remoteSelfHostedEmailSignIn)),
+    () => tester.tap(find.text(appL10n.remoteXcodexSignInTitle)),
   );
   await _frames(tester);
   final fields = find.descendant(

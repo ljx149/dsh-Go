@@ -436,7 +436,7 @@ Future<void> _withScreen(
 Future<void> _openSheet(WidgetTester tester, Uri origin) async {
   final entry = find.descendant(
     of: find.byType(RemoteScreen),
-    matching: find.text(appL10n.remoteSelfHostedEmailSignIn),
+    matching: find.text(appL10n.remoteXcodexSignInTitle),
   );
   expect(entry, findsOneWidget);
   await tester.runAsync(() => tester.tap(entry));
