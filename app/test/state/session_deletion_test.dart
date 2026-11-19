@@ -36,6 +36,7 @@ class _Backend implements SessionDeletionBackend {
     supportCalls++;
     return support;
   }
+
   @override
   Future<void> delete(DshClient client, String sessionId) async {
     calls.add(sessionId);
@@ -49,10 +50,22 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<(ProviderContainer, FakeWorkspaceHost, _Backend)> start({bool running = false}) async {
+  Future<(ProviderContainer, FakeWorkspaceHost, _Backend)> start({bool running = false, bool managed = false}) async {
     final host = FakeWorkspaceHost();
     host.seedSession('s1', 'First', DateTime.now(), running: running);
     host.seedSession('s2', 'Second', DateTime.now());
+    if (managed) {
+      host.sessions.first['projections'] = {
+        'kind': 'sequenced',
+        'asOfSeq': -1,
+        'values': {
+          'managedAgent': {
+            'agentId': 'codex',
+            'capabilities': {'delete': false},
+          },
+        },
+      };
+    }
     final connection = workspaceHost(host);
     await connection.client.mux.start();
     final backend = _Backend();
@@ -103,6 +116,15 @@ void main() {
     expect(container.read(composerQuoteProvider).containsKey('s1'), isFalse);
     expect(container.read(drawerViewProvider).folders.single.sessionIds, ['s2']);
     expect(container.read(sessionDeletionBusyProvider), isFalse);
+  });
+
+  test('managed sessions cannot reach native permanent deletion even in a mixed batch', () async {
+    final (container, _, backend) = await start(managed: true);
+    final result = await container.read(sessionDeletionProvider.notifier).delete(['s1', 's2'], owner: owner(container));
+    expect(result.failures, {'s1': 'unsupported'});
+    expect(result.deleted, ['s2']);
+    expect(backend.calls, ['s2']);
+    expect(container.read(sessionsProvider).value!.map((session) => session.sessionId), ['s1']);
   });
 
   test('running row and pending archive never reach destructive backend', () async {

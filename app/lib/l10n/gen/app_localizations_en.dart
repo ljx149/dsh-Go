@@ -10721,6 +10721,23 @@ class L10nEn extends L10n {
   String get marketInstallRefused => 'This engine can\'t install market plugins';
 
   @override
+  String get managedChooseAgent => 'Choose an Agent';
+
+  @override
+  String get managedChooseWorkspace => 'Select a workspace on this computer';
+
+  @override
+  String get managedDiscoveryRetry => 'Could not read available Agents. Tap to retry.';
+
+  @override
+  String get managedUsesComputerConfig =>
+      'Uses this computer’s CLI and configuration; availability is checked when starting.';
+
+  @override
+  String get managedCreateFailed =>
+      'Could not confirm session creation. Reconnect and retry with the same Agent and workspace; the same request will be reused.';
+
+  @override
   String get marketSectionOfficial => 'Official';
 
   @override

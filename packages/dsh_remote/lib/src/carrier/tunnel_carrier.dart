@@ -45,6 +45,9 @@ const Set<String> harnessRemoteAllowlist = {
   'llm/discoverModels',
   'llm/listConfigurableProviders',
   'llm/listProviders',
+  // Xcodex managed Agent plugin; older Hosts may still refuse these endpoints.
+  'managedAgent/agents',
+  'managedAgent/create',
   'messageFeedback/delete',
   'messageFeedback/list',
   'messageFeedback/put',

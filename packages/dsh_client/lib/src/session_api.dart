@@ -739,11 +739,19 @@ class DshClient {
   // Models, permissions and provider keys
 
   /// `session/modelCatalog`: providers, models, reasoning efforts, default.
-  Future<ModelCatalog> listModels() async {
+  Future<ModelCatalog> listModels({String? sessionId}) async {
+    if (sessionId != null) return listSessionModels(sessionId);
     final read = tryBackgroundListRead(BackgroundListKind.models);
     if (read != null) return (await read) as ModelCatalog;
     return ModelCatalog.fromJson(await rpc.call('session/modelCatalog'));
   }
+
+  /// Managed sessions must use their own catalog, never the Host-wide cache.
+  Future<ModelCatalog> listSessionModels(String sessionId) async => ModelCatalog.fromJson(
+    await rpc.call('session/modelCatalog', {
+      'request': {'sessionId': sessionId},
+    }),
+  );
 
   /// Switch this session's model, retaining the selection-only API.
   Future<ModelSelection> setModel(

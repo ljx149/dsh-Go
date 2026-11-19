@@ -10161,6 +10161,21 @@ class L10nZh extends L10n {
   String get marketInstallRefused => '这个引擎不能安装市场插件';
 
   @override
+  String get managedChooseAgent => '选择 Agent';
+
+  @override
+  String get managedChooseWorkspace => '请选择这台电脑上的工作区';
+
+  @override
+  String get managedDiscoveryRetry => '读取 Agent 列表失败，点击重试';
+
+  @override
+  String get managedUsesComputerConfig => '使用电脑上的 CLI 和配置，能否运行将在启动时确认。';
+
+  @override
+  String get managedCreateFailed => '未能确认会话创建结果。请重连后在同一工作区重试同一 Agent，将复用原请求。';
+
+  @override
   String get marketSectionOfficial => '官方';
 
   @override

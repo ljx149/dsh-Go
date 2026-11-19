@@ -1,0 +1,7 @@
+{
+  "managedChooseAgent": "选择 Agent",
+  "managedChooseWorkspace": "请选择这台电脑上的工作区",
+  "managedDiscoveryRetry": "读取 Agent 列表失败，点击重试",
+  "managedUsesComputerConfig": "使用电脑上的 CLI 和配置，能否运行将在启动时确认。",
+  "managedCreateFailed": "未能确认会话创建结果。请重连后在同一工作区重试同一 Agent，将复用原请求。"
+}

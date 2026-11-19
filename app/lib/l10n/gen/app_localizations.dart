@@ -18860,6 +18860,36 @@ abstract class L10n {
   /// **'这个引擎不能安装市场插件'**
   String get marketInstallRefused;
 
+  /// No description provided for @managedChooseAgent.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择 Agent'**
+  String get managedChooseAgent;
+
+  /// No description provided for @managedChooseWorkspace.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择这台电脑上的工作区'**
+  String get managedChooseWorkspace;
+
+  /// No description provided for @managedDiscoveryRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'读取 Agent 列表失败，点击重试'**
+  String get managedDiscoveryRetry;
+
+  /// No description provided for @managedUsesComputerConfig.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用电脑上的 CLI 和配置，能否运行将在启动时确认。'**
+  String get managedUsesComputerConfig;
+
+  /// No description provided for @managedCreateFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'未能确认会话创建结果。请重连后在同一工作区重试同一 Agent，将复用原请求。'**
+  String get managedCreateFailed;
+
   /// No description provided for @marketSectionOfficial.
   ///
   /// In zh, this message translates to:

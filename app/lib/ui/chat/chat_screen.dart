@@ -48,6 +48,7 @@ import '../../state/hosts_state.dart' show HostKind, HostRef, activeHostProvider
 import '../../state/media_generation.dart';
 import '../../state/mention_state.dart';
 import '../../state/models_state.dart';
+import '../../state/managed_agents_state.dart';
 import '../../state/new_chat_modes.dart';
 import '../../state/session_search.dart' show folderLabel;
 import '../../state/safe_mode_state.dart';
@@ -105,6 +106,7 @@ import 'mention/mention_controller.dart';
 import 'mention/mention_picker.dart';
 import 'mention/mention_text_controller.dart';
 import 'model_sheet.dart';
+import 'managed_agent_picker.dart';
 import 'slash_palette.dart';
 import 'trajectory_sheet.dart';
 import 'usage_sheet.dart';
@@ -644,6 +646,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   /// on the next send: the message must not go out under a setup the person
   /// did not choose.
   Future<bool> _applyOwedSetup(HostRef host, String sessionId, OwedSetup owed, bool Function() isCurrent) async {
+    // Pending native preset/permission defaults never configure an external Agent.
+    if (ref.read(managedSessionProvider(sessionId)) != null) return true;
     if (_applyingSetup != null) return false;
     final client = ref.read(activeConnectionProvider).value?.client;
     if (client == null) return false;
@@ -695,7 +699,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     if ((typed.isEmpty && drafts.isEmpty) || _creating != null || _syncWait != null) return;
     // Generation mode: an ordinary message whose first line is the
     // parameter header (media-generation §8, revision of 2026-10-28).
-    final generate = ref.read(generateModeProvider).byKey[_draftKey];
+    final generate = ref.read(managedSessionProvider(ref.read(currentSessionProvider))) == null
+        ? ref.read(generateModeProvider).byKey[_draftKey]
+        : null;
     if (generate != null && !_generateReady(generate, typed, drafts)) return;
     final client = ref.read(activeConnectionProvider).value?.client;
     if (client == null) return;
@@ -1038,6 +1044,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   // 附件
 
   Future<void> _attach() async {
+    final caps = ref.read(managedSessionProvider(ref.read(currentSessionProvider)))?.managedAgentCapabilities;
+    if (caps != null && !caps.imagePrompts && !caps.fileAttachments) return;
     final room = maxAttachments - _drafts.length;
     final client = ref.read(activeConnectionProvider).value?.client;
     // A draft or connection that changes away and back still retires this pick.
@@ -1116,6 +1124,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
 
   /// An image from the keyboard (screenshot, sticker): into the tray, not sent.
   void _pasteContent(KeyboardInsertedContent content) {
+    final caps = ref.read(managedSessionProvider(ref.read(currentSessionProvider)))?.managedAgentCapabilities;
+    if (caps != null && !caps.imagePrompts && !caps.fileAttachments) return;
     final data = content.data;
     if (data == null || data.isEmpty) {
       _toast(appL10n.chatReadImageFailed);
@@ -1534,9 +1544,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   Future<void> _showModelSheet() {
     final sessionId = ref.read(currentSessionProvider);
     final selection = sessionId == null ? ref.read(pendingModelProvider) : ref.read(chatProvider(sessionId)).model;
+    final managed = ref.read(managedSessionProvider(sessionId));
+    if (managed?.managedAgentCapabilities?.modelSelection == false) return Future<void>.value();
     return showModelSheet(
       context,
-      current: selection ?? ref.read(currentModelCatalogProvider)?.defaultSelection,
+      managedSessionId: managed == null ? null : sessionId,
+      current:
+          selection ??
+          (managed == null
+              ? ref.read(currentModelCatalogProvider)?.defaultSelection
+              : ref.read(managedModelListViewProvider(sessionId!)).value?.defaultSelection),
       onSelected: _modelTarget(),
     );
   }
@@ -1544,7 +1561,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   /// 「换模型」 after the engine refused the model. DSH follows the official
   /// model listing, so the catalog read earlier may be stale: read it again.
   void _switchModel() {
-    ref.invalidate(modelCatalogProvider);
+    final sessionId = ref.read(currentSessionProvider);
+    if (ref.read(managedSessionProvider(sessionId))?.managedAgentCapabilities?.modelSelection == false) return;
+    if (sessionId != null && ref.read(managedSessionProvider(sessionId)) != null) {
+      ref.invalidate(managedModelCatalogProvider(sessionId));
+    } else {
+      ref.invalidate(modelCatalogProvider);
+    }
     unawaited(_showModelSheet());
   }
 
@@ -1568,6 +1591,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
           ref.read(currentSessionProvider) != sessionId) {
         return;
       }
+      if (ref.read(managedSessionProvider(sessionId))?.managedAgentCapabilities?.modelSelection == false) return;
       if (sessionId == null) {
         ref.read(pendingModelProvider.notifier).select(selection);
       } else {
@@ -1582,6 +1606,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final sessionId = ref.watch(currentSessionProvider);
+    final managed = ref.watch(managedSessionProvider(sessionId));
+    final managedCapabilities = managed?.managedAgentCapabilities;
+    final managedSessionId = managed == null ? null : sessionId;
+    final canSelectModel = managedCapabilities == null || managedCapabilities.modelSelection;
+    final canAttach =
+        managedCapabilities == null || managedCapabilities.imagePrompts || managedCapabilities.fileAttachments;
     final connAsync = ref.watch(activeConnectionProvider);
     final conn = connAsync.value;
     final connected = conn != null;
@@ -1665,7 +1695,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
         : null;
     final hasFolders = sessionId == null && ref.watch(drawerViewProvider).folders.isNotEmpty;
     final commands = ref.watch(slashCommandsProvider(sessionId));
-    final contextFraction = sessionId == null
+    final contextFraction = sessionId == null || (managedCapabilities != null && !managedCapabilities.contextUsage)
         ? null
         : ref.watch(sessionUsageProvider(sessionId).select((u) => u.contextFraction));
     // 「帮我修复」: a fresh chat with the repair prompt in the composer,
@@ -1746,7 +1776,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     // the 新对话 key would have nothing to mirror.
     final isChild = sessionId != null && ref.watch(subagentParentProvider(sessionId).select((p) => p != null));
     // 生成模式: this conversation's, and what the host can do.
-    final generate = ref.watch(generateModeProvider.select((m) => m.byKey[_draftKey]));
+    final generate = managed == null ? ref.watch(generateModeProvider.select((m) => m.byKey[_draftKey])) : null;
     final mediaReady = ref.watch(mediaPluginProvider) == MediaPluginState.ready;
     // What the catalogue really offers here (§4.3): a picture can go in as a
     // reference, or as a video's first frame, only where a model takes one.
@@ -1945,7 +1975,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                             ? null
                             : () {
                                 HapticFeedback.selectionClick();
-                                ref.read(currentSessionProvider.notifier).select(null);
+                                unawaited(
+                                  showNewAgentSession(
+                                    context,
+                                    ref,
+                                    () => ref.read(currentSessionProvider.notifier).select(null),
+                                    () {},
+                                  ),
+                                );
                               },
                         // The title pill opens the whole session's details (on a
                         // wide window it folds and unfolds the panel beside us).
@@ -1957,9 +1994,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                         // A new chat's title is only 「新对话」, so the model takes the
                         // header's right like on a wide window — picked before typing,
                         // once there is an engine to send to.
-                        trailing: narrow && (sessionId != null || !connected)
+                        trailing: !canSelectModel || (narrow && (sessionId != null || !connected))
                             ? null
                             : ModelChip(
+                                managedSessionId: managedSessionId,
                                 selection: sessionId == null ? pendingModel : chat?.model,
                                 onSelected: _modelTarget(),
                                 grouped: true,
@@ -2215,6 +2253,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                     focusNode: _focus,
                                     connected: connected,
                                     running: chat?.running ?? false,
+                                    allowWhileRunning: managedCapabilities == null || managedCapabilities.steering,
                                     stopping: chat?.stopping ?? false,
                                     sessionReady: chat?.controlReady ?? true,
                                     busy: _creating != null || _syncWait != null,
@@ -2242,16 +2281,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                         ? l10n.mediaHintVideo
                                         : l10n.mediaHintImage,
                                     onSend: _send,
-                                    onSendOptions: chat?.controlReady ?? true ? _sendOptions : null,
+                                    onSendOptions: managed == null && (chat?.controlReady ?? true)
+                                        ? _sendOptions
+                                        : null,
                                     voice: _voice,
                                     onKeyEvent: _composerKey,
-                                    onContentInserted: connected ? _pasteContent : null,
+                                    onContentInserted: connected && canAttach ? _pasteContent : null,
                                     onStop: _stop,
                                     hasAttachments: _drafts.isNotEmpty,
-                                    leading: AttachButton(onPressed: connected ? _attach : null),
+                                    leading: canAttach ? AttachButton(onPressed: connected ? _attach : null) : null,
                                     keyboardInset: MediaQuery.viewInsetsOf(context).bottom,
-                                    footer: _composerOpens(context) && !isChild
+                                    footer: canSelectModel && _composerOpens(context) && !isChild
                                         ? ComposerModelPill(
+                                            managedSessionId: managedSessionId,
                                             selection: sessionId == null ? pendingModel : chat?.model,
                                             onSelected: _modelTarget(),
                                           )
@@ -2309,7 +2351,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
       // Beside the activity strip ([_stripRisk]).
     } else if (sessionId != null && autoApprove) {
       pill = AutoApprovePill(onDisable: () => ref.read(chatProvider(sessionId).notifier).setAutoApprove(false));
-    } else if (sessionId != null) {
+    } else if (sessionId != null && ref.watch(managedSessionProvider(sessionId)) == null) {
       final risky = ref.watch(sessionModesProvider(sessionId).select((m) => m.risky ? m.preset : null));
       if (risky != null) {
         // Beside the mode capsule it shrinks to its ⚠ (§4.2).
@@ -2340,6 +2382,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
         onDisable: () => ref.read(chatProvider(sessionId).notifier).setAutoApprove(false),
       );
     }
+    if (ref.watch(managedSessionProvider(sessionId)) != null) return null;
     final risky = ref.watch(sessionModesProvider(sessionId).select((m) => m.risky ? m.preset : null));
     if (risky == null) return null;
     return StripRiskChip.permission(

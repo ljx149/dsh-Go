@@ -28,7 +28,7 @@ final modelCatalogProvider = FutureProvider<ModelCatalog?>((ref) async {
     final refresh = switch (event) {
       CredentialUpdatedEvent() || HostReadyEvent() => true,
       SettingsUpdatedEvent(:final namespace) => namespace == piAiSettingsNs || namespace == defaultModelSettingsNs,
-      UnknownHostEvent(:final event) => event == 'llm/adapters-updated',
+      UnknownHostEvent(:final event) => event == 'llm/adapters-updated' || event == 'llm/models-updated',
       _ => false,
     };
     if (refresh && ref.mounted) ref.invalidateSelf();
@@ -150,3 +150,47 @@ String? startingEffort(ModelInfo model) {
   }
   return ids.first;
 }
+
+/// Managed catalogs are session scoped. Never fall back to the host catalog:
+/// that would offer another Agent's routes (and potentially credentials).
+final managedModelCatalogProvider = FutureProvider.autoDispose.family<ModelCatalog?, String>((ref, sessionId) async {
+  ref.watch(modelSelectionScopeProvider);
+  final conn = ref.watch(readListLiveConnectionProvider);
+  if (conn == null) return null;
+  final sub = conn.client.hostEvents.listen((event) {
+    final refresh = switch (event) {
+      CredentialUpdatedEvent() || HostReadyEvent() => true,
+      UnknownHostEvent(:final event) => event == 'llm/adapters-updated' || event == 'llm/models-updated',
+      _ => false,
+    };
+    if (refresh && ref.mounted) ref.invalidateSelf();
+  });
+  ref.onDispose(() => unawaited(sub.cancel()));
+  final identity = ref.read(readListIdentityProvider);
+  final cache = ref.read(readListCacheProvider);
+  final catalog = await conn.client.listModels(sessionId: sessionId);
+  if (ref.mounted) cache.stamp(catalog, identity, conn.client);
+  return catalog;
+});
+
+final managedModelListViewProvider = Provider.autoDispose.family<ReadListView<ModelCatalog>, String>((ref, sessionId) {
+  final source = ref.watch(managedModelCatalogProvider(sessionId));
+  final connection = ref.watch(readListLiveConnectionProvider);
+  final identity = ref.watch(readListIdentityProvider);
+  final cache = ref.watch(readListCacheProvider);
+  final raw = source.value;
+  final current = raw != null && cache.current(raw, identity, connection?.client);
+  final ready = connection != null && current && !source.isLoading && !source.hasError;
+  return ReadListView(
+    value: current && connection != null ? raw : null,
+    readOnly: !ready,
+    authoritative: ready,
+    status: source.hasError
+        ? ReadListStatus.failed
+        : connection == null
+        ? ReadListStatus.offline
+        : ready
+        ? ReadListStatus.current
+        : ReadListStatus.updating,
+  );
+});

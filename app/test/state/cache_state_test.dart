@@ -56,7 +56,7 @@ class _Client extends DshClient {
   }
 
   @override
-  Future<ModelCatalog> listModels() async {
+  Future<ModelCatalog> listModels({String? sessionId}) async {
     modelCalls++;
     return ModelCatalog.fromJson(const {});
   }

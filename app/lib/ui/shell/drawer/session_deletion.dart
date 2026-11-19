@@ -27,6 +27,13 @@ String? sessionDeletionDisabledReason(
   required Iterable<String> ids,
 }) {
   final l10n = context.l10n;
+  final managed = {
+    for (final row in sessions)
+      if (row.isManagedAgent) row.sessionId: row,
+  };
+  if (ids.any((id) => managed.containsKey(id) && managed[id]!.managedAgentCapabilities?.delete != true)) {
+    return l10n.shellDeleteUnsupported;
+  }
   if (busy) return l10n.shellDeletingChats;
   if (available.hasError) return l10n.shellDeleteUnavailable;
   if (available.isLoading) return l10n.shellDeleteChecking;
@@ -152,9 +159,7 @@ Future<void> deleteSessionsFlow(
           ),
           content: SingleChildScrollView(
             child: Text(
-              current
-                  ? [context.l10n.shellDeleteWarning, ?reason].join('\n\n')
-                  : context.l10n.shellDeleteOwnerChanged,
+              current ? [context.l10n.shellDeleteWarning, ?reason].join('\n\n') : context.l10n.shellDeleteOwnerChanged,
             ),
           ),
           actions: [
@@ -315,6 +320,7 @@ String sessionDeletionFailureText(BuildContext context, String code) => switch (
   'writer-held' => context.l10n.shellDeleteWriterHeld,
   'not-found' => context.l10n.shellDeleteNotFound,
   'unavailable' => context.l10n.shellDeleteUnavailable,
+  'unsupported' => context.l10n.shellDeleteUnsupported,
   'connection-lost' => context.l10n.shellDeleteConnectionLost,
   'busy' => context.l10n.shellDeletingChats,
   'archive-pending' => context.l10n.shellDeleteArchivePending,
