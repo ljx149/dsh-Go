@@ -5982,6 +5982,7 @@
   "stateGoalTurnsExhausted": "No turns left",
   "stateGoalStateChanged": "Goal status changed",
   "stateSshHost": "SSH host",
+  "stateOrcaHost": "Orca host",
   "stateHostBrowserFailed": "Couldn’t open the browser. Copy the sign-in link and open it in a browser.",
   "stateSignInFailed": "Couldn’t sign in",
   "stateMarketTooLarge": "Plugin catalog is too large. Download stopped.",
