@@ -245,5 +245,9 @@ final readListIdentityProvider = Provider<ReadListIdentity?>((ref) {
         host.harnessVersion,
         epoch,
       ]);
+    case HostKind.orca:
+      // Orca hosts have no DSH read-list identity; that concern lives in the
+      // orca backend, not this DSH-identity provider.
+      return null;
   }
 });

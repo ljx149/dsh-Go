@@ -202,6 +202,7 @@
   "stateGoalTurnsExhausted": "轮次已用完",
   "stateGoalStateChanged": "目标状态已变化",
   "stateSshHost": "SSH 主机",
+  "stateOrcaHost": "Orca 主机",
   "stateHostBrowserFailed": "没能打开浏览器，可以复制登录链接到浏览器里完成。",
   "stateSignInFailed": "没能登录",
   "stateMarketTooLarge": "插件目录太大，已停止下载",

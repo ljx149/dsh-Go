@@ -19529,6 +19529,9 @@ class L10nZh extends L10n {
   String get stateSshHost => 'SSH 主机';
 
   @override
+  String get stateOrcaHost => 'Orca 主机';
+
+  @override
   String get stateHostBrowserFailed => '没能打开浏览器，可以复制登录链接到浏览器里完成。';
 
   @override

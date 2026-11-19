@@ -35984,6 +35984,12 @@ abstract class L10n {
   /// **'SSH 主机'**
   String get stateSshHost;
 
+  /// No description provided for @stateOrcaHost.
+  ///
+  /// In zh, this message translates to:
+  /// **'Orca 主机'**
+  String get stateOrcaHost;
+
   /// No description provided for @stateHostBrowserFailed.
   ///
   /// In zh, this message translates to:

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/l10n.dart';
 import '../remote/link_status.dart';
 import '../remote/network_watch.dart';
+import '../remote/orca/orca_host_config.dart';
 import '../remote/relay/relay_backend.dart';
 import '../remote/ssh/ssh_link.dart';
 import '../remote/ssh/ssh_transport.dart';
@@ -234,6 +235,10 @@ final hostLinkProvider = Provider.autoDispose.family<HostLink?, HostRef>((ref, h
         unawaited(link.close());
       });
       return link;
+    case HostKind.orca:
+      // Orca has no DSH HostLink; it connects through the OrcaMobileBackend
+      // (Task 5's mobileChatBackendProvider). No DSH connection to build here.
+      return null;
   }
 });
 
@@ -254,6 +259,7 @@ final hostNameProvider = Provider.autoDispose.family<String?, HostRef>((ref, hos
     HostKind.local => appL10n.commonThisPhone,
     HostKind.ssh => ref.watch(hostsProvider.select((s) => s.sshById(host.id)?.name)),
     HostKind.relay => ref.watch(relayAccountProvider.select((a) => a.value?.hostById(host.id)?.name)) ?? host.name,
+    HostKind.orca => ref.watch(orcaHostsProvider.select((s) => s.firstWhere((h) => h.id == host.id, orElse: () => OrcaHostConfig(id: host.id, endpoint: '')).name)) ?? host.name,
   };
 });
 
@@ -554,5 +560,10 @@ AsyncValue<HostConnection?> _connectionForHost(Ref ref, HostRef host) {
       return ref.watch(remoteConnectionProvider(host));
     case HostKind.relay:
       return ref.watch(remoteConnectionProvider(host));
+    case HostKind.orca:
+      // Orca's connection is the OrcaMobileBackend (mobileChatBackendProvider,
+      // Task 5). This provider hands out a DshClient connection, so orca has
+      // no DSH connection here.
+      return const AsyncData(null);
   }
 }

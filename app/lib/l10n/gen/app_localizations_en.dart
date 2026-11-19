@@ -20583,6 +20583,9 @@ class L10nEn extends L10n {
   String get stateSshHost => 'SSH host';
 
   @override
+  String get stateOrcaHost => 'Orca host';
+
+  @override
   String get stateHostBrowserFailed => 'Couldn’t open the browser. Copy the sign-in link and open it in a browser.';
 
   @override
