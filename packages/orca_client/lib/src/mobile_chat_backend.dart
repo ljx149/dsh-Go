@@ -19,8 +19,13 @@ abstract interface class MobileChatBackend {
   Stream<ChatEvent> watch(String id, {int? fromSeq});
 
   /// The host assigns the fence; `null` fence on create (spec §5.2/§6).
+  ///
+  /// When [sessionId] is null the implementation mints one; callers that need
+  /// to address the session before the response (e.g. to open it) pass their
+  /// own id.
   Future<({String sessionId, int fence})> createSession({
     required String agent,
+    String? sessionId,
     String? worktreeId,
     String? firstMessage,
   });

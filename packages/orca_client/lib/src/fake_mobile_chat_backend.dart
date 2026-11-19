@@ -103,12 +103,13 @@ class FakeMobileChatBackend implements MobileChatBackend {
   @override
   Future<({String sessionId, int fence})> createSession({
     required String agent,
+    String? sessionId,
     String? worktreeId,
     String? firstMessage,
   }) async {
     _requireCap(ChatCapability.createWithFirstMessage);
     _fence++;
-    return (sessionId: 'fake-${_fence}', fence: _fence);
+    return (sessionId: sessionId ?? 'fake-${_fence}', fence: _fence);
   }
 
   @override
