@@ -10,3 +10,4 @@ export 'src/session_mutation.dart';
 export 'src/backend_types.dart';
 export 'src/mobile_chat_backend.dart';
 export 'src/fake_mobile_chat_backend.dart';
+export 'src/orca_mobile_backend.dart';
