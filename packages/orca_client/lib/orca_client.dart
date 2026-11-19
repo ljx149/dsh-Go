@@ -11,3 +11,4 @@ export 'src/backend_types.dart';
 export 'src/mobile_chat_backend.dart';
 export 'src/fake_mobile_chat_backend.dart';
 export 'src/orca_mobile_backend.dart';
+export 'src/dsh_mobile_backend.dart';

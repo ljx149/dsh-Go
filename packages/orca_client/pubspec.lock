@@ -89,6 +89,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.8"
+  dsh_client:
+    dependency: "direct main"
+    description:
+      path: "../dsh_client"
+      relative: true
+    source: path
+    version: "0.1.0"
   ffi:
     dependency: transitive
     description:

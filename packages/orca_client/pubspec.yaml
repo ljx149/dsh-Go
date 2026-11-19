@@ -3,11 +3,14 @@ description: >
   Minimal pure-Dart client for the Orca mobile link: legacy pairing, E2EE,
   RPC, and live event subscription. No Flutter dependency. P0 0.4 probe.
 version: 0.1.0-p0
+publish_to: none
 environment:
   sdk: ^3.0.0
 dependencies:
   pinenacl: ^0.6.0
   web_socket_channel: ^3.0.0
   crypto: ^3.0.6
+  dsh_client:
+    path: ../dsh_client
 dev_dependencies:
   test: ^1.26.0
