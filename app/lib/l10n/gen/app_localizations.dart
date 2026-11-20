@@ -16667,7 +16667,7 @@ abstract class L10n {
   /// No description provided for @hubSettingsOrApiKey.
   ///
   /// In zh, this message translates to:
-  /// **'扫码配对或浏览器授权登录'**
+  /// **'使用浏览器授权登录'**
   String get hubSettingsOrApiKey;
 
   /// No description provided for @hubPluginShare.

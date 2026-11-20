@@ -61,7 +61,7 @@ void main() {
     expect(find.text('登录 xcodex 账号'), findsOneWidget);
     expect(find.text('登录 DeepSeek 账号'), findsNothing);
     expect(find.text('或填写 API Key'), findsNothing);
-    expect(find.text('扫码配对或浏览器授权登录'), findsOneWidget);
+    expect(find.text('使用浏览器授权登录'), findsOneWidget);
   });
 
   testWidgets('local, signed out: tapping opens the remote hosts screen', (tester) async {

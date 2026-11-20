@@ -8986,7 +8986,7 @@ class L10nZh extends L10n {
   String get hubSettingsSignInAccount => '登录 xcodex 账号';
 
   @override
-  String get hubSettingsOrApiKey => '扫码配对或浏览器授权登录';
+  String get hubSettingsOrApiKey => '使用浏览器授权登录';
 
   @override
   String get hubPluginShare => '分享插件';

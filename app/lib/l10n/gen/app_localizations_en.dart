@@ -9472,7 +9472,7 @@ class L10nEn extends L10n {
   String get hubSettingsSignInAccount => 'Sign in to xcodex';
 
   @override
-  String get hubSettingsOrApiKey => 'Pair by QR or sign in in a browser';
+  String get hubSettingsOrApiKey => 'Sign in in a browser';
 
   @override
   String get hubPluginShare => 'Share plugin';

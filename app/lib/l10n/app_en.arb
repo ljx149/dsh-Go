@@ -2762,7 +2762,7 @@
   "hubSettingsNoApiKey": "No API key set",
   "hubSettingsApiKeyHint": "Add an API key to start chatting",
   "hubSettingsSignInAccount": "Sign in to xcodex",
-  "hubSettingsOrApiKey": "Pair by QR or sign in in a browser",
+  "hubSettingsOrApiKey": "Sign in in a browser",
   "hubPluginShare": "Share plugin",
   "hubPluginDetails": "Plugin details",
   "hubPluginFeatured": "Featured on dshfind",
