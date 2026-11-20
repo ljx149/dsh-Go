@@ -403,6 +403,9 @@ class _SettingsOverviewState extends ConsumerState<SettingsOverview> {
     final colors = DshColors.of(context);
     final active = ref.watch(activeHostProvider);
     final remoteOnly = runtime.status.runtimeMissing && !active.isLocal;
+    // The xcodex account (the relayed sign-in) outranks the DeepSeek account
+    // for the card's identity: it is the one that pays for the remote hosts.
+    final xcodex = ref.watch(relayAccountProvider.select((a) => a.value?.user));
 
     // The account's wallets when signed in; otherwise the key's balance.
     final money = account.signedIn && wallets != null ? balanceFromAccount(wallets) : balance.balance;
@@ -421,6 +424,10 @@ class _SettingsOverviewState extends ConsumerState<SettingsOverview> {
     // Set when the card shows the remote host: its link state.
     String? hostLink;
     switch (account.phase) {
+      case _ when xcodex != null:
+        leading = const OverviewGlyph(AppIcons.account);
+        title = xcodex.displayName;
+        subtitle = l10n.commonSignedIn;
       case AccountPhase.signedIn:
         leading = AccountAvatar(profile: account.profile, size: OverviewCard.avatarSize);
         title = account.profile?.displayName ?? l10n.hubSettingsAccount;
