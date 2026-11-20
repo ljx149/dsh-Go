@@ -1,3 +1,4 @@
+import '../../chat/managed_agent_logo.dart';
 // The drawer's conversation row and section label.
 
 import 'package:flutter/material.dart';
@@ -25,12 +26,14 @@ class SessionTile extends StatelessWidget {
     this.pending,
     this.unread = false,
     this.pinned = false,
+    this.agentId,
     this.indent = 0,
     this.selecting = false,
     this.selected = false,
   });
 
   final String title;
+  final String? agentId;
   final bool running;
 
   /// The open conversation (soft fill; ignored while selecting).
@@ -120,6 +123,7 @@ class SessionTile extends StatelessWidget {
             child: Row(
               children: [
                 _CheckSlot(selecting: selecting, selected: selected),
+                if (agentId != null) ...[ManagedAgentLogo(agentId: agentId!), const SizedBox(width: 8)],
                 Expanded(
                   child: Text(
                     title,

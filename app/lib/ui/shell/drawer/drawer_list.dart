@@ -78,6 +78,7 @@ class DrawerConversationList extends ConsumerWidget {
     Widget tile(SessionSummary s, {bool inFolder = false}) {
       final id = s.sessionId;
       return SessionTile(
+        agentId: s.managedAgentId,
         key: ValueKey('session-$id'),
         title: sessionTitle(s),
         running: s.running,

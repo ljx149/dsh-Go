@@ -562,6 +562,12 @@ class SessionProjections {
   String? get title => asString(values['title']);
   String? get agentPreset => asString(values['agentPreset']);
 
+  /// Explicit Host identity. A native session's model/provider is not its Agent.
+  String? get managedAgentId {
+    final id = asString(asMap(values['managedAgent'])?['agentId']);
+    return id == null || id.isEmpty ? null : id;
+  }
+
   /// Current permission preset (`read-only`, `workspace-write`,
   /// `danger-full-access`, `auto`, or `custom`).
   String? get permissionPreset => asString(asMap(values['permissions'])?['currentValue']);
@@ -657,6 +663,7 @@ class SessionSummary {
   final Map<String, Object?> raw;
 
   String? get title => projections.title;
+  String? get managedAgentId => projections.managedAgentId;
   bool get isSubagent => origin == 'subagent';
 
   SessionSummary copyWith({
