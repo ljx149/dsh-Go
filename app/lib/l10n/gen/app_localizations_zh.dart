@@ -8983,10 +8983,10 @@ class L10nZh extends L10n {
   String get hubSettingsApiKeyHint => '填写 Key 后即可对话';
 
   @override
-  String get hubSettingsSignInAccount => '登录 DeepSeek 账号';
+  String get hubSettingsSignInAccount => '登录 xcodex 账号';
 
   @override
-  String get hubSettingsOrApiKey => '或填写 API Key';
+  String get hubSettingsOrApiKey => '扫码配对或浏览器授权登录';
 
   @override
   String get hubPluginShare => '分享插件';

@@ -16661,13 +16661,13 @@ abstract class L10n {
   /// No description provided for @hubSettingsSignInAccount.
   ///
   /// In zh, this message translates to:
-  /// **'登录 DeepSeek 账号'**
+  /// **'登录 xcodex 账号'**
   String get hubSettingsSignInAccount;
 
   /// No description provided for @hubSettingsOrApiKey.
   ///
   /// In zh, this message translates to:
-  /// **'或填写 API Key'**
+  /// **'扫码配对或浏览器授权登录'**
   String get hubSettingsOrApiKey;
 
   /// No description provided for @hubPluginShare.

@@ -21,7 +21,6 @@ import '../../state/settings_state.dart';
 import '../../state/system_actions_state.dart';
 import '../../state/ui_mode_state.dart';
 import '../../state/update_state.dart';
-import '../account/account_page.dart';
 import '../account/account_widgets.dart';
 import '../chat/balance_widgets.dart' show formatMoney;
 import '../common/ask_ai.dart';
@@ -475,7 +474,9 @@ class _SettingsOverviewState extends ConsumerState<SettingsOverview> {
         semanticLabel: hostLink != null
             ? l10n.hubSettingsHostSemantics(title, hostLink)
             : l10n.hubSettingsAccountSemantics(title, subtitle),
-        onTap: () => _push(hostLink != null ? const RemoteScreen() : const AccountPage()),
+        // xcodex is the sign-in: the card's entry opens the remote hosts screen
+        // (device sign-in + QR pairing live there), never the DeepSeek account page.
+        onTap: () => _push(const RemoteScreen()),
         footer: OverviewFooter(
           tone: engine.tone,
           text: [l10n.hubSettingsEngine, engine.label, if (dsh != null) 'DSH $dsh'].join(' · '),

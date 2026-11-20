@@ -9469,10 +9469,10 @@ class L10nEn extends L10n {
   String get hubSettingsApiKeyHint => 'Add an API key to start chatting';
 
   @override
-  String get hubSettingsSignInAccount => 'Sign in to DeepSeek';
+  String get hubSettingsSignInAccount => 'Sign in to xcodex';
 
   @override
-  String get hubSettingsOrApiKey => 'Or add an API key';
+  String get hubSettingsOrApiKey => 'Pair by QR or sign in in a browser';
 
   @override
   String get hubPluginShare => 'Share plugin';

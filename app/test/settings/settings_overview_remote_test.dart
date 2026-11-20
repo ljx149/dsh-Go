@@ -83,15 +83,15 @@ void main() {
     expect(find.text('远程主机 · 连接失败'), findsOneWidget);
   });
 
-  testWidgets('no runtime, still on 本机: sign-in as before', (tester) async {
+  testWidgets('no runtime, still on 本机: the card offers xcodex', (tester) async {
     await _pump(tester, _overrides(host: HostRef.local));
-    expect(find.text('登录 DeepSeek 账号'), findsOneWidget);
+    expect(find.text('登录 xcodex 账号'), findsOneWidget);
     expect(find.text('实验室服务器'), findsNothing);
   });
 
-  testWidgets('runtime installed, remote host: sign-in as before', (tester) async {
+  testWidgets('runtime installed, remote host: the card offers xcodex', (tester) async {
     await _pump(tester, _overrides(runtime: runningStatus));
-    expect(find.text('登录 DeepSeek 账号'), findsOneWidget);
+    expect(find.text('登录 xcodex 账号'), findsOneWidget);
     expect(find.text('实验室服务器'), findsNothing);
   });
 
