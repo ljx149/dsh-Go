@@ -545,6 +545,33 @@ class TodoItem {
 /// Projection values (`SessionProjectionValues`): Host-folded state keyed by
 /// projection name. Typed getters cover the keys a chat UI needs; [values]
 /// keeps everything else (`contextPressure`, `turnOutline`, `goal`, ...).
+/// Capabilities advertised by the managed Agent plugin, not inferred from a model name.
+/// Older plugins permit text and model selection; unadvertised operations stay off.
+class ManagedAgentCapabilities {
+  const ManagedAgentCapabilities(this.raw);
+  factory ManagedAgentCapabilities.fromJson(Object? json) => ManagedAgentCapabilities(asMapOrEmpty(json));
+  final Map<String, Object?> raw;
+  bool get textPrompts => raw['textPrompts'] != false;
+  bool get imagePrompts => raw['imagePrompts'] == true;
+  bool get fileAttachments => raw['fileAttachments'] == true;
+  bool get steering => raw['steering'] == true;
+  bool get queueWhileBusy => raw['queueWhileBusy'] == true;
+  bool get modelSelection => raw['modelSelection'] != false;
+  bool get reasoningEffort => raw['reasoningEffort'] == true;
+  bool get rename => raw['rename'] == true;
+  bool get archive => raw['archive'] == true;
+  bool get unarchive => raw['unarchive'] == true;
+  bool get pin => raw['pin'] == true;
+  bool get move => raw['move'] == true;
+  bool get fork => raw['fork'] == true;
+  bool get rewind => raw['rewind'] == true;
+  bool get compact => raw['compact'] == true;
+  bool get threadGoal => raw['threadGoal'] == true;
+  bool get contextUsage => raw['contextUsage'] == true;
+  bool get delete => raw['delete'] == true;
+  bool get permissions => raw['permissions'] == true;
+}
+
 class SessionProjections {
   const SessionProjections(this.asOfSeq, this.values);
 
@@ -567,6 +594,10 @@ class SessionProjections {
     final id = asString(asMap(values['managedAgent'])?['agentId']);
     return id == null || id.isEmpty ? null : id;
   }
+
+  bool get isManagedAgent => managedAgentId != null;
+  ManagedAgentCapabilities? get managedAgentCapabilities =>
+      isManagedAgent ? ManagedAgentCapabilities.fromJson(asMap(values['managedAgent'])?['capabilities']) : null;
 
   /// Current permission preset (`read-only`, `workspace-write`,
   /// `danger-full-access`, `auto`, or `custom`).
@@ -664,6 +695,8 @@ class SessionSummary {
 
   String? get title => projections.title;
   String? get managedAgentId => projections.managedAgentId;
+  bool get isManagedAgent => projections.isManagedAgent;
+  ManagedAgentCapabilities? get managedAgentCapabilities => projections.managedAgentCapabilities;
   bool get isSubagent => origin == 'subagent';
 
   SessionSummary copyWith({

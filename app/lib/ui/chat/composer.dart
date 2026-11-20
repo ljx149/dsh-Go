@@ -49,6 +49,7 @@ class Composer extends StatefulWidget {
     this.focusNode,
     this.groupId = EditableText,
     this.busy = false,
+    this.allowWhileRunning = true,
     this.stopping = false,
     this.sessionReady = true,
     this.accessory,
@@ -83,6 +84,9 @@ class Composer extends StatefulWidget {
 
   /// 正在建会话 / 提交中:挡住连点。
   final bool busy;
+
+  /// Managed Agents without steering keep Stop available even with a draft.
+  final bool allowWhileRunning;
 
   /// Stop was asked for: the stop key turns busy until the turn ends.
   final bool stopping;
@@ -239,7 +243,9 @@ class _ComposerState extends State<Composer> with SingleTickerProviderStateMixin
   late Widget? _tray = widget.tray;
 
   void _send() {
-    if (!widget.connected || !widget.sessionReady || widget.busy) return;
+    if (!widget.connected || !widget.sessionReady || widget.busy || (widget.running && !widget.allowWhileRunning)) {
+      return;
+    }
     HapticFeedback.lightImpact();
     widget.onSend();
   }
@@ -404,7 +410,7 @@ class _ComposerState extends State<Composer> with SingleTickerProviderStateMixin
             final phase = voice?.phase ?? VoicePhase.idle;
             final dictating = phase == VoicePhase.listening || phase == VoicePhase.transcribing;
             final empty = _draftEmpty.value && !widget.hasAttachments;
-            final showStop = widget.running && empty && !dictating;
+            final showStop = widget.running && (empty || !widget.allowWhileRunning) && !dictating;
             final showMic = !dictating && !showStop && empty && !widget.busy && (voice?.available ?? false);
             final enabled =
                 !widget.busy && widget.connected && widget.sessionReady && (showStop || !empty || widget.sendWhenEmpty);

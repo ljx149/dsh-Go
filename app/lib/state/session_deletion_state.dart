@@ -145,6 +145,14 @@ class SessionDeletionController extends Notifier<bool> {
       for (final id in ids) {
         if (!owned()) break;
         final sessions = ref.read(sessionsProvider.notifier);
+        final row = <SessionSummary>[
+          ...?ref.read(sessionsProvider).value,
+          ...sessions.archivedSessions,
+        ].where((session) => session.sessionId == id).firstOrNull;
+        if (row?.isManagedAgent == true && row?.managedAgentCapabilities?.delete != true) {
+          failures[id] = 'unsupported';
+          continue;
+        }
         final rejection = sessions.beginDeletion(id);
         if (rejection != null) {
           failures[id] = rejection;

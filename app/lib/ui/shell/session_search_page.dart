@@ -431,14 +431,18 @@ class _SearchBody extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(AppIcons.unarchive),
                     title: Text(context.l10n.shellRestoreAndOpen),
-                    onTap: () => Navigator.pop(sheet, _ArchivedAction.restore),
+                    enabled: !session.isManagedAgent || session.managedAgentCapabilities?.unarchive == true,
+                    onTap: !session.isManagedAgent || session.managedAgentCapabilities?.unarchive == true
+                        ? () => Navigator.pop(sheet, _ArchivedAction.restore)
+                        : null,
                   ),
-                  SessionDeleteTile(
-                    ids: [session.sessionId],
-                    owner: deletionOwner,
-                    archived: true,
-                    onTap: () => Navigator.pop(sheet, _ArchivedAction.delete),
-                  ),
+                  if (!session.isManagedAgent || session.managedAgentCapabilities?.delete == true)
+                    SessionDeleteTile(
+                      ids: [session.sessionId],
+                      owner: deletionOwner,
+                      archived: true,
+                      onTap: () => Navigator.pop(sheet, _ArchivedAction.delete),
+                    ),
                 ],
               ),
               const SizedBox(height: 12),

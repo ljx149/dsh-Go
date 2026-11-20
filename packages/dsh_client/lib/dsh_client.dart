@@ -35,6 +35,7 @@ export 'src/media_meta.dart';
 export 'src/goals_api.dart';
 export 'src/messages_api.dart';
 export 'src/models.dart';
+export 'src/managed_agents_api.dart';
 export 'src/mux.dart';
 export 'src/phone_callback.dart';
 export 'src/phone_session.dart';

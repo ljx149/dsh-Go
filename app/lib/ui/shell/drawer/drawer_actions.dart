@@ -192,7 +192,13 @@ Future<void> moveToFolderFlow(BuildContext context, WidgetRef ref, List<String> 
 Future<void> pinSelectionFlow(BuildContext context, WidgetRef ref) async {
   final container = ProviderScope.containerOf(context, listen: false);
   final chosen = container.read(drawerSelectionProvider);
-  final ids = chosen?.toList() ?? const [];
+  final rows = {
+    for (final row in container.read(drawerScopeProvider)?.sessions ?? const <SessionSummary>[]) row.sessionId: row,
+  };
+  final ids = (chosen ?? const <String>{}).where((id) {
+    final row = rows[id];
+    return row != null && (!row.isManagedAgent || row.managedAgentCapabilities?.pin == true);
+  }).toList();
   if (ids.isEmpty) return;
   final selectedHost = container.read(activeHostProvider);
   final connection = container.read(readListLiveConnectionProvider);

@@ -1326,6 +1326,39 @@ class ChatController extends Notifier<ChatState> {
     final body = verbatim ? text : trimmed;
     if (!_canControl && (mode == SendMode.interrupt || !await waitForSync())) return false;
     if (!ref.mounted || !identical(client, _client) || !_canControl) return false;
+    // Check before creating pending entries or uploading any attachment. A
+    // rejected send returns false so the caller retains the original draft.
+    final capabilities = projections.managedAgentCapabilities;
+    if (capabilities != null) {
+      final unsupported = attachments.any(
+        (a) => a.isImage ? !capabilities.imagePrompts : !capabilities.fileAttachments,
+      );
+      if (unsupported) {
+        state = state.copyWith(
+          error: AppLocale.isEnglish
+              ? 'This Agent currently accepts text only. Remove attachments to send.'
+              : '此 Agent 当前仅支持文本，请移除附件后发送。',
+        );
+        return false;
+      }
+      final busyUnsupported =
+          state.running &&
+          (switch (mode) {
+            SendMode.now || SendMode.steer => !capabilities.steering,
+            SendMode.queue => !capabilities.queueWhileBusy,
+            // Interrupt-and-send is not an advertised managed operation. Let the
+            // explicit Stop action finish first so no draft is silently cancelled.
+            SendMode.interrupt => true,
+          });
+      if (!capabilities.textPrompts || busyUnsupported) {
+        state = state.copyWith(
+          error: AppLocale.isEnglish
+              ? 'Wait for this Agent to finish, or stop it before sending another message.'
+              : '请等待此 Agent 完成本轮回复，或先停止任务再发送。',
+        );
+        return false;
+      }
+    }
     final operation = _ChatOperation(ref, client, _syncScope);
     final content = _contentKey(body, attachments);
     final retrying = _unsettled?.content == content;
@@ -1952,6 +1985,7 @@ class ChatController extends Notifier<ChatState> {
       // Old hosts do not acknowledge persistence; a fresh catalog is still
       // useful, but is never presented as proof that the default was saved.
       ref.invalidate(modelCatalogProvider);
+      ref.invalidate(managedModelCatalogProvider(sessionId));
       return current();
     } catch (e) {
       if (!current()) return false;

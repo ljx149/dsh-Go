@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // See THIRD_PARTY_NOTICES.md.
 
+import '../chat/managed_agent_picker.dart';
+
 import 'dart:async';
 
 import 'package:dsh_client/dsh_client.dart';
@@ -175,7 +177,7 @@ class SessionsDrawer extends ConsumerWidget {
                       // When even the lockup's room is not enough, 新对话
                       // keeps its glyph and lets its words go.
                       NewChatButton(
-                        onTap: newChat,
+                        onTap: () => showNewAgentSession(context, ref, newChat, onClose),
                         compact: NewChatButton.widthOf(context) > box.maxWidth - (36 + 8 + 36 + 8),
                       ),
                     ],
@@ -564,7 +566,7 @@ class _SessionList extends ConsumerWidget {
                 SheetGroup(
                   children: [
                     // Pinning lives in the host's workspace registry.
-                    if (workspaces.ready)
+                    if (workspaces.ready && (!s.isManagedAgent || s.managedAgentCapabilities?.pin == true))
                       ListTile(
                         leading: Icon(pinned ? AppIcons.pinActive : AppIcons.pin),
                         title: Text(pinned ? context.l10n.shellUnpin : context.l10n.commonPin),
@@ -596,13 +598,14 @@ class _SessionList extends ConsumerWidget {
                       subtitle: Text(context.l10n.shellArchiveStopsTurn),
                       onTap: () => Navigator.pop(sheet, 'archive'),
                     ),
-                    SessionDeleteTile(
-                      ids: [s.sessionId],
-                      owner: deletionOwner,
-                      onTap: () {
-                        if (deletionOwner?.isCurrent(ref) == true) Navigator.pop(sheet, 'delete');
-                      },
-                    ),
+                    if (!s.isManagedAgent)
+                      SessionDeleteTile(
+                        ids: [s.sessionId],
+                        owner: deletionOwner,
+                        onTap: () {
+                          if (deletionOwner?.isCurrent(ref) == true) Navigator.pop(sheet, 'delete');
+                        },
+                      ),
                   ],
                 ),
                 const SizedBox(height: 12),
